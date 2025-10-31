@@ -1,4 +1,4 @@
-package pension_management_system.pension.dto;
+package pension_management_system.pension.employer.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

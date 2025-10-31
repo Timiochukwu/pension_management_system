@@ -1,8 +1,8 @@
 package pension_management_system.pension.employer.service;
 
 
-import pension_management_system.pension.dto.EmployerRequest;
-import pension_management_system.pension.dto.EmployerResponse;
+import pension_management_system.pension.employer.dto.EmployerRequest;
+import pension_management_system.pension.employer.dto.EmployerResponse;
 
 import java.util.List;
 

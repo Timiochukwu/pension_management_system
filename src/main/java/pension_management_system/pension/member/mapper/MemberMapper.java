@@ -29,6 +29,7 @@ public interface MemberMapper {
     @Mapping(target = "updatedAt", ignore = true) // Auto-set by @UpdateTimestamp
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "employer.id", source = "employerId")
     Member toEntity(MemberRequest request);
 
     /**
@@ -37,6 +38,7 @@ public interface MemberMapper {
      */
     @Mapping(source = "employer.id", target = "employerId")
     @Mapping(source = "employer.companyName", target = "employerName")
+    @Mapping(source = "employer.email", target = "employerEmail")
     MemberResponse toResponse(Member member);
 
     /**
@@ -50,6 +52,18 @@ public interface MemberMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "employer.id", source = "employerId")
     void updateEntityFromRequest(MemberRequest request, @MappingTarget Member member);
+
+
+    /**
+     * Helper method to safely map employer ID
+     */
+    default String mapEmployerId(Member member) {
+        if (member.getEmployer() != null && member.getEmployer().getId() != null) {
+            return member.getEmployer().getId().toString();
+        }
+        return null;
+    }
 
 }

@@ -45,7 +45,6 @@ public class MemberServiceImpl implements MemberService {
      * @Transactional: If any error occurs, all database changes are rolled back
      */
     @Override
-    @Transactional(readOnly = true)
     public MemberResponse registerMember(MemberRequest request) {
         // STEP 1: Log the operation (good for debugging and auditing)
         log.info("Starting member registration for email: {}", request.getEmail() );

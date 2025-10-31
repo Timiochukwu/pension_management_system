@@ -49,7 +49,7 @@ public class MemberResponse {
     private String email;
     private String phoneNumber;
     private LocalDate dateOfBirth;
-    private  Integer age; // Computed field: calculated from dateOfBirth
+    private Integer age; // Computed field: calculated from dateOfBirth
 
     /**
      * Address Information
@@ -73,6 +73,7 @@ public class MemberResponse {
      */
     private Long employerId;
     private String employerName;
+    private String employerEmail;
 
     /**
      * Statistics

@@ -158,7 +158,7 @@ public class Member {
      *
      * @return "FirstName LastName"
      */
-    public String getFullName() {
+    public String getfullName() {
         return firstName + " " + lastName;
     }
 
@@ -218,8 +218,6 @@ public class Member {
         this.deleted = false;
         this.updatedAt = LocalDateTime.now();
     }
-
-
 }
 
 

@@ -4,8 +4,8 @@ package pension_management_system.pension.employer.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import pension_management_system.pension.dto.EmployerRequest;
-import pension_management_system.pension.dto.EmployerResponse;
+import pension_management_system.pension.employer.dto.EmployerRequest;
+import pension_management_system.pension.employer.dto.EmployerResponse;
 import pension_management_system.pension.employer.entity.Employer;
 
 @Mapper(componentModel = "spring")

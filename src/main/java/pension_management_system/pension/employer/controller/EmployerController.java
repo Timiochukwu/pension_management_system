@@ -10,11 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pension_management_system.pension.common.dto.ApiResponseDto;
-import pension_management_system.pension.dto.EmployerRequest;
-import pension_management_system.pension.dto.EmployerResponse;
+import pension_management_system.pension.employer.dto.EmployerRequest;
+import pension_management_system.pension.employer.dto.EmployerResponse;
 import pension_management_system.pension.employer.service.EmployerService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
