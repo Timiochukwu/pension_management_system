@@ -24,7 +24,7 @@ public class ContributionResponse {
     private String memberName;
     private String memberBusinessId;
     private ContributionType contributionType;
-    private BigDecimal amount;
+    private BigDecimal contributionAmount;
     private LocalDate contributionDate;
     private PaymentMethod paymentMethod;
     private String description;

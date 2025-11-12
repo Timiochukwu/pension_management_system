@@ -52,7 +52,7 @@ public interface MemberMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
-    @Mapping(target = "employer.id", source = "employerId")
+//    @Mapping(target = "employer.id", source = "employerId")
     void updateEntityFromRequest(MemberRequest request, @MappingTarget Member member);
 
 

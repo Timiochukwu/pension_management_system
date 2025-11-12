@@ -24,7 +24,7 @@ public class ContributionRequest {
 
     @NotNull(message = "Contribution amount is requires")
     @DecimalMin(value = "100", message = "Amount must be greater or equals to 100")
-    private BigDecimal amount;
+    private BigDecimal contributionAmount;
 
     @NotNull(message = "Contribution date is required")
     @PastOrPresent(message = "Contribution date cannot be in the future")

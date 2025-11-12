@@ -158,7 +158,7 @@ public class Member {
      *
      * @return "FirstName LastName"
      */
-    public String getfullName() {
+    public String getFullName() {
         return firstName + " " + lastName;
     }
 

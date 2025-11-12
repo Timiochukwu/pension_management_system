@@ -7,6 +7,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.common.exception.MemberNotFoundException;
+import pension_management_system.pension.employer.entity.Employer;
+import pension_management_system.pension.employer.repository.EmployerRepository;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
 import pension_management_system.pension.member.entity.Member;
@@ -37,6 +39,7 @@ public class MemberServiceImpl implements MemberService {
 
     // DEPENDENCIES (injected by Spring through constructor)
     private final MemberRepository memberRepository; // Database repository
+    private final EmployerRepository employerRepository;
     private final MemberMapper memberMapper; // Convert between Entity and DTO
 
     /**
@@ -57,12 +60,26 @@ public class MemberServiceImpl implements MemberService {
             log.error("Registration failed - Email already exists: {}", request.getEmail());
             throw new IllegalArgumentException("Email already exists: "+ request.getEmail());
         }
+        if (memberRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            log.error("Registration failed - Phone number already exists: {}", request.getPhoneNumber());
+            throw new IllegalArgumentException("Phone number already exists: "+ request.getPhoneNumber());
+        }
         // STEP 4: Convert DTO (MemberRequest) to Entity (Member)
         // This is done by MapStruct - it copies fields from request to entity
         Member member = memberMapper.toEntity(request);
         // STEP 5: Set default values
         member.setMemberStatus(MemberStatus.ACTIVE);
         member.setActive(true);
+        // STEP 5: Handle employer safely
+        if (request.getEmployerId() != null) {
+            Employer employer = employerRepository.findById(request.getEmployerId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Employer not found with ID: " + request.getEmployerId()
+                    ));
+            member.setEmployer(employer);
+        } else {
+            member.setEmployer(null); // No employer assigned
+        }
         // STEP 6: Save to database
         // save() returns the saved entity with generated ID
         Member savedMember = memberRepository.save(member);
@@ -91,6 +108,17 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         memberMapper.updateEntityFromRequest(request,  existingMember);
+
+        // Handle employer manually
+        if (request.getEmployerId() != null) {
+            Employer employer = employerRepository.findById(request.getEmployerId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Employer not found with ID: " + request.getEmployerId()
+                    ));
+            existingMember.setEmployer(employer);
+        } else {
+            existingMember.setEmployer(null); // optional
+        }
         Member  updatedMember = memberRepository.save(existingMember);
 
         log.info("Member updated successfully with ID: {}", id);

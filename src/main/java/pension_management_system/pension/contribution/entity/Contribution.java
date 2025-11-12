@@ -60,7 +60,7 @@ public class Contribution {
     private ContributionStatus status =  ContributionStatus.PENDING;
 
     @Column
-    private LocalDateTime processAt;
+    private LocalDateTime processedAt;
 
     @Column(length = 100)
     private String processedBy;
@@ -84,7 +84,7 @@ public class Contribution {
     }
     public void markAsProcessed(String processedByUser) {
         this.status = ContributionStatus.COMPLETED;
-        this.processAt = LocalDateTime.now();
+        this.processedAt = LocalDateTime.now();
         this.processedBy = processedByUser;
     }
     public void markedAsFailed(String reason) {
