@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.common.exception.MemberNotFoundException;
@@ -16,6 +19,7 @@ import pension_management_system.pension.member.entity.MemberStatus;
 import pension_management_system.pension.member.mapper.MemberMapper;
 import pension_management_system.pension.member.repository.MemberRepository;
 import pension_management_system.pension.member.service.MemberService;
+import pension_management_system.pension.member.specification.MemberSpecification;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -197,6 +201,46 @@ public class MemberServiceImpl implements MemberService {
         log.info("Member reactivated successfully with ID: {}", id);
 
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> searchMembers(
+            String memberId,
+            String firstName,
+            String lastName,
+            String email,
+            String phoneNumber,
+            MemberStatus status,
+            Boolean active,
+            Long employerId,
+            LocalDate dateOfBirthFrom,
+            LocalDate dateOfBirthTo,
+            String city,
+            String state,
+            String country,
+            Pageable pageable
+    ) {
+        log.info("Searching members with filters");
+
+        Specification<Member> spec = MemberSpecification.filterMembers(
+                memberId, firstName, lastName, email, phoneNumber, status, active,
+                employerId, dateOfBirthFrom, dateOfBirthTo, city, state, country
+        );
+
+        Page<Member> members = memberRepository.findAll(spec, pageable);
+        return members.map(memberMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> quickSearch(String searchTerm, Pageable pageable) {
+        log.info("Quick search for members with term: {}", searchTerm);
+
+        Specification<Member> spec = MemberSpecification.searchMembers(searchTerm);
+        Page<Member> members = memberRepository.findAll(spec, pageable);
+        return members.map(memberMapper::toResponse);
+    }
+
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**

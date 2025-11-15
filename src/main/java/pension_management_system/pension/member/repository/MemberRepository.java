@@ -1,6 +1,7 @@
 package pension_management_system.pension.member.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pension_management_system.pension.member.entity.Member;
@@ -18,7 +19,7 @@ import java.util.Optional;
  */
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, JpaSpecificationExecutor<Member> {
 
     // Find member by business member ID
     Optional<Member> findByMemberId(String memberId);
@@ -43,6 +44,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Count active members
     long countByActiveTrue();
 
+    // Analytics queries
+    long countByActiveFalse();
 
+    long countByMemberStatus(MemberStatus status);
 
 }
