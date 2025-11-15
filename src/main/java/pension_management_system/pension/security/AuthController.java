@@ -74,11 +74,21 @@ public class AuthController {
 
             log.info("Login successful for user: {}", request.getUsername());
 
-            // Return token
+            // Create user info response
+            UserInfo userInfo = new UserInfo(
+                    1L,  // TODO: Get actual user ID from database
+                    "Admin",  // TODO: Get actual first name from database
+                    "User",   // TODO: Get actual last name from database
+                    userDetails.getUsername(),
+                    "ADMIN"  // TODO: Get actual role from database
+            );
+
+            // Return token with user info
             return ResponseEntity.ok(new AuthResponse(
                     token,
                     "Bearer",
-                    userDetails.getUsername()
+                    userDetails.getUsername(),
+                    userInfo
             ));
 
         } catch (Exception e) {
@@ -111,7 +121,16 @@ public class AuthController {
 
                 String newToken = jwtUtil.generateToken(user);
 
-                return ResponseEntity.ok(new AuthResponse(newToken, "Bearer", username));
+                // Create user info for refresh response
+                UserInfo userInfo = new UserInfo(
+                        1L,  // TODO: Get actual user ID from database
+                        "Admin",  // TODO: Get actual first name from database
+                        "User",   // TODO: Get actual last name from database
+                        username,
+                        "ADMIN"  // TODO: Get actual role from database
+                );
+
+                return ResponseEntity.ok(new AuthResponse(newToken, "Bearer", username, userInfo));
             }
 
             return ResponseEntity.status(401).build();
@@ -132,7 +151,16 @@ public class AuthController {
     public record AuthResponse(
             String token,
             String type,
-            String username
+            String username,
+            UserInfo user
+    ) {}
+
+    public record UserInfo(
+            Long id,
+            String firstName,
+            String lastName,
+            String email,
+            String role
     ) {}
 
     public record RefreshTokenRequest(
