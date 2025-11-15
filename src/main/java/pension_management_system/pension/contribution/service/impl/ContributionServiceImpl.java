@@ -21,8 +21,10 @@ import pension_management_system.pension.member.repository.MemberRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,27 +83,84 @@ public class ContributionServiceImpl implements ContributionService {
 
     @Override
     public List<ContributionResponse> getMemberContributions(Long memberId) {
-        return List.of();
+        log.info("Fetching all contributions for member id {}", memberId);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        List<Contribution> contributions = contributionRepository.findByMember(member);
+
+        return contributions.stream()
+                .map(contributionMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public ContributionResponse getContributionById(Long id) {
-        return null;
+        log.info("Fetching contribution for id {}", id);
+        Contribution contribution = contributionRepository.findById(id)
+
+                .orElseThrow(() -> new InvalidContributionException("Contribution not found with id: " + id));
+        return contributionMapper.toResponse(contribution);
     }
 
     @Override
     public BigDecimal calculateTotalContributions(Long memberId) {
-        return null;
+        log.info("Calculating total contributions for member id {}", memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        log.info("ssss"+ member.getId());
+        BigDecimal total = contributionRepository.getTotalContributionsById(memberId);
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BigDecimal calculateTotalByType(Long memberId, ContributionType type) {
-        return null;
+        log.info("Calculating total contributions for member id {}", memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        BigDecimal total = contributionRepository.getTotalByMemberAndType(member, type);
+        return total != null ? total : BigDecimal.ZERO;
+
     }
 
     @Override
     public ContributionStatementResponse generateStatement(Long memberId, LocalDate startDate, LocalDate endDate) {
-        return null;
+        log.info("Generating statement for member id {}", memberId);
+        if (startDate.isAfter(endDate)) {
+            throw new InvalidContributionException("Start date must be before end date");
+        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        List<Contribution> contributions = contributionRepository.findByMemberAndContributionDateBetween(member, startDate, endDate);
+        BigDecimal totalMontly = BigDecimal.ZERO;
+        BigDecimal totalVoluntary = BigDecimal.ZERO;
+
+        for (Contribution contribution : contributions) {
+            if (contribution.getContributionType() == ContributionType.MONTHLY) {
+                totalMontly = totalMontly.add(contribution.getContributionAmount());
+            }else {
+                totalVoluntary = totalVoluntary.add(contribution.getContributionAmount());
+            }
+        }
+        BigDecimal totalContribution = totalMontly.add(totalVoluntary);
+
+        List<ContributionResponse> contributionResponses = contributions.stream()
+                .map(contributionMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return ContributionStatementResponse.builder()
+                .memberId(member.getMemberId())
+                .memberName(member.getFullName())
+                .startDate(startDate)
+                .endDate(endDate)
+                .contributions(contributionResponses)
+                .totalMonthlyContribution(totalMontly)
+                .totalMonthlyContribution(totalVoluntary)
+                .grandTotal(totalContribution)
+                .numberOfContributions(contributions.size())
+                .generatedDate(LocalDate.now())
+                .build();
     }
 
     @Override

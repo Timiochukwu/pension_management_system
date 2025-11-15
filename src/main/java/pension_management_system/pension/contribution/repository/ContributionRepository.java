@@ -30,6 +30,10 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
     BigDecimal getTotalContributionsByMember(
             @Param("member") Member member
     );
+    @Query("SELECT SUM(c.contributionAmount) FROM Contribution c WHERE c.member.id =:id")
+    BigDecimal getTotalContributionsById(
+            @Param("id")  Long id
+    );
 
     @Query("SELECT SUM(c.contributionAmount) FROM Contribution c WHERE c.member =:member " +
             "AND c.contributionType =:type")
@@ -44,4 +48,5 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
 
     long countByMember(Member member);
 
+    List<Contribution> findByMember(Member member);
 }
