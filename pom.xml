@@ -75,6 +75,18 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
+	<!-- WebFlux for HTTP Client (Payment Gateway Integration) -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-webflux</artifactId>
+	</dependency>
+
+	<!-- Kafka for Async Event Processing -->
+	<dependency>
+		<groupId>org.springframework.kafka</groupId>
+		<artifactId>spring-kafka</artifactId>
+	</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -192,11 +204,15 @@
 
 		<!-- iText for PDF Export -->
 		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itext7-core</artifactId>
-			<version>7.2.5</version>
-			<type>pom</type>
-		</dependency>
+		<groupId>com.itextpdf</groupId>
+		<artifactId>kernel</artifactId>
+		<version>7.2.5</version>
+	</dependency>
+	<dependency>
+		<groupId>com.itextpdf</groupId>
+		<artifactId>layout</artifactId>
+		<version>7.2.5</version>
+	</dependency>
 
 		<!-- OpenCSV for CSV Export -->
 		<dependency>
