@@ -1,0 +1,35 @@
+-- Create payments table
+-- Tracks payment transactions through payment gateways
+
+CREATE TABLE payments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_id VARCHAR(100) NOT NULL UNIQUE COMMENT 'Unique payment identifier',
+    transaction_reference VARCHAR(100) NOT NULL UNIQUE,
+    member_id BIGINT,
+    contribution_id BIGINT,
+    benefit_id BIGINT,
+    amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'NGN',
+    payment_gateway VARCHAR(20) NOT NULL COMMENT 'PAYSTACK, FLUTTERWAVE, BANK_TRANSFER',
+    gateway_reference VARCHAR(100) COMMENT 'Reference from payment gateway',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED',
+    payment_date TIMESTAMP NULL,
+    description TEXT,
+    customer_email VARCHAR(100),
+    customer_name VARCHAR(100),
+    customer_phone VARCHAR(20),
+    callback_url VARCHAR(255),
+    metadata TEXT COMMENT 'JSON metadata',
+    error_message TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE SET NULL,
+    FOREIGN KEY (contribution_id) REFERENCES contributions(id) ON DELETE SET NULL,
+    FOREIGN KEY (benefit_id) REFERENCES benefits(id) ON DELETE SET NULL,
+    INDEX idx_payment_id (payment_id),
+    INDEX idx_transaction_reference (transaction_reference),
+    INDEX idx_gateway_reference (gateway_reference),
+    INDEX idx_member_id (member_id),
+    INDEX idx_status (status),
+    INDEX idx_payment_gateway (payment_gateway)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

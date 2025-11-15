@@ -7,6 +7,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userDetails.UserDetails;
+import pension_management_system.pension.security.entity.User;
+import pension_management_system.pension.security.service.CustomUserDetailsService;
+import pension_management_system.pension.security.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -30,6 +33,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     /**
      * LOGIN ENDPOINT
@@ -66,21 +70,35 @@ public class AuthController {
                     )
             );
 
-            // Get user details
+            // Get user details from authentication
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            // Extract actual User entity from CustomUserDetails
+            User user = null;
+            if (userDetails instanceof CustomUserDetailsService.CustomUserDetails) {
+                user = ((CustomUserDetailsService.CustomUserDetails) userDetails).getUser();
+                // Update last login timestamp
+                user.updateLastLogin();
+            }
 
             // Generate JWT
             String token = jwtUtil.generateToken(userDetails);
 
             log.info("Login successful for user: {}", request.getUsername());
 
-            // Create user info response
-            UserInfo userInfo = new UserInfo(
-                    1L,  // TODO: Get actual user ID from database
-                    "Admin",  // TODO: Get actual first name from database
-                    "User",   // TODO: Get actual last name from database
+            // Create user info response from actual database user
+            UserInfo userInfo = (user != null) ? new UserInfo(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getRole().name()
+            ) : new UserInfo(
+                    1L,
+                    "Unknown",
+                    "User",
                     userDetails.getUsername(),
-                    "ADMIN"  // TODO: Get actual role from database
+                    "MEMBER"
             );
 
             // Return token with user info
@@ -93,6 +111,73 @@ public class AuthController {
 
         } catch (Exception e) {
             log.error("Login failed for user {}: {}", request.getUsername(), e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * REGISTER ENDPOINT
+     *
+     * Creates a new user account
+     *
+     * Request:
+     * POST /api/auth/register
+     * {
+     *   "username": "john.doe",
+     *   "email": "john.doe@example.com",
+     *   "password": "password123",
+     *   "firstName": "John",
+     *   "lastName": "Doe",
+     *   "phoneNumber": "1234567890"
+     * }
+     *
+     * Response:
+     * {
+     *   "id": 1,
+     *   "username": "john.doe",
+     *   "email": "john.doe@example.com",
+     *   "firstName": "John",
+     *   "lastName": "Doe",
+     *   "role": "MEMBER"
+     * }
+     *
+     * @param request Registration details
+     * @return Created user (without password)
+     */
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("Registration attempt for user: {}", request.getUsername());
+
+        try {
+            // Build user entity from request
+            User user = User.builder()
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(request.getPassword())
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .phoneNumber(request.getPhoneNumber())
+                    .role(User.UserRole.MEMBER) // Default role for registration
+                    .build();
+
+            // Register user (password will be encrypted by service)
+            User savedUser = userService.registerUser(user);
+
+            log.info("User registered successfully: {}", savedUser.getUsername());
+
+            // Return user response (password already cleared by service)
+            return ResponseEntity.ok(new UserResponse(
+                    savedUser.getId(),
+                    savedUser.getUsername(),
+                    savedUser.getEmail(),
+                    savedUser.getFirstName(),
+                    savedUser.getLastName(),
+                    savedUser.getRole().name(),
+                    savedUser.getPhoneNumber()
+            ));
+
+        } catch (IllegalArgumentException e) {
+            log.error("Registration failed for user {}: {}", request.getUsername(), e.getMessage());
             throw e;
         }
     }
@@ -165,6 +250,38 @@ public class AuthController {
 
     public record RefreshTokenRequest(
             String token
+    ) {}
+
+    public record RegisterRequest(
+            @jakarta.validation.constraints.NotBlank(message = "Username is required")
+            @jakarta.validation.constraints.Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+            String username,
+
+            @jakarta.validation.constraints.NotBlank(message = "Email is required")
+            @jakarta.validation.constraints.Email(message = "Email must be valid")
+            String email,
+
+            @jakarta.validation.constraints.NotBlank(message = "Password is required")
+            @jakarta.validation.constraints.Size(min = 6, message = "Password must be at least 6 characters")
+            String password,
+
+            @jakarta.validation.constraints.NotBlank(message = "First name is required")
+            String firstName,
+
+            @jakarta.validation.constraints.NotBlank(message = "Last name is required")
+            String lastName,
+
+            String phoneNumber
+    ) {}
+
+    public record UserResponse(
+            Long id,
+            String username,
+            String email,
+            String firstName,
+            String lastName,
+            String role,
+            String phoneNumber
     ) {}
 }
 
