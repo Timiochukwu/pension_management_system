@@ -18,4 +18,6 @@ public interface ContributionService {
     BigDecimal calculateTotalByType(Long memberId, ContributionType type);
     ContributionStatementResponse generateStatement(Long  memberId, LocalDate startDate, LocalDate endDate);
     List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
+    ContributionResponse updateContribution(Long id, ContributionRequest request);
+    void deleteContribution(Long id);
 }

@@ -259,4 +259,48 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
     }
+
+    /**
+     * Handle BenefitNotFoundException
+     *
+     * When: Benefit is not found in database
+     * Status Code: 404 NOT FOUND
+     */
+    @ExceptionHandler(BenefitNotFoundException.class)
+    public ResponseEntity<ApiResponseDto> handleBenefitNotFoundException(BenefitNotFoundException ex) {
+        log.error("Benefit not found: {}", ex.getMessage());
+
+        ApiResponseDto errorResponse = ApiResponseDto.<Void>builder()
+                .success(false)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .errors(null)
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(errorResponse);
+    }
+
+    /**
+     * Handle InvalidBenefitException
+     *
+     * When: Benefit validation fails or invalid operation
+     * Status Code: 400 BAD REQUEST
+     */
+    @ExceptionHandler(InvalidBenefitException.class)
+    public ResponseEntity<ApiResponseDto> handleInvalidBenefitException(InvalidBenefitException ex) {
+        log.error("Invalid benefit: {}", ex.getMessage());
+
+        ApiResponseDto errorResponse = ApiResponseDto.<Void>builder()
+                .success(false)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .errors(null)
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
 }
