@@ -2,6 +2,9 @@ package pension_management_system.pension.employer.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.employer.dto.EmployerRequest;
@@ -10,6 +13,7 @@ import pension_management_system.pension.employer.entity.Employer;
 import pension_management_system.pension.employer.mapper.EmployerMapper;
 import pension_management_system.pension.employer.repository.EmployerRepository;
 import pension_management_system.pension.employer.service.EmployerService;
+import pension_management_system.pension.employer.specification.EmployerSpecification;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -122,6 +126,86 @@ public class EmployerServiceImpl implements EmployerService {
         employer.activate();
         employerRepository.save(employer);
         log.info("Employer deactivated successfully with ID: {}", employer.getId());
+    }
+
+    /**
+     * ADVANCED SEARCH - Search employers with multiple filter criteria
+     *
+     * How this works:
+     * 1. Creates a "Specification" - a dynamic query builder
+     * 2. Uses EmployerSpecification to combine all filter criteria
+     * 3. Passes to repository which converts to SQL WHERE clauses
+     * 4. Returns paginated results
+     * 5. Maps each Employer entity to EmployerResponse DTO
+     *
+     * Example: If you pass companyName="Tech" and city="Lagos"
+     * SQL generated: SELECT * FROM employers WHERE company_name LIKE '%Tech%' AND city LIKE '%Lagos%'
+     *
+     * @Transactional(readOnly = true) - Opens database connection in read-only mode
+     *                                    Faster because database doesn't lock tables for writing
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EmployerResponse> searchEmployers(
+            String employerId,
+            String companyName,
+            String registrationNumber,
+            String email,
+            String phoneNumber,
+            String industry,
+            Boolean active,
+            String city,
+            String state,
+            String country,
+            Pageable pageable
+    ) {
+        // Log the search operation for debugging/monitoring
+        log.info("Searching employers with filters - companyName: {}, city: {}", companyName, city);
+
+        // STEP 1: Build the dynamic query using Specification pattern
+        // This creates SQL WHERE clauses based on which parameters are not null
+        Specification<Employer> spec = EmployerSpecification.filterEmployers(
+                employerId, companyName, registrationNumber, email, phoneNumber,
+                industry, active, city, state, country
+        );
+
+        // STEP 2: Execute the query with pagination
+        // Repository converts Specification to SQL and runs it
+        Page<Employer> employers = employerRepository.findAll(spec, pageable);
+
+        // STEP 3: Convert Entity to DTO
+        // "map" transforms each Employer to EmployerResponse
+        // This hides database details and sends only needed fields to client
+        return employers.map(employerMapper::toResponse);
+    }
+
+    /**
+     * QUICK SEARCH - Simple keyword search across multiple fields
+     *
+     * Perfect for search boxes where user types one keyword and you want to search
+     * across company name, email, employer ID, etc.
+     *
+     * How it works:
+     * 1. Takes single search term
+     * 2. EmployerSpecification creates OR condition across multiple fields
+     * 3. SQL generated: WHERE (company_name LIKE '%term%' OR email LIKE '%term%' OR ...)
+     *
+     * Example: searchTerm="microsoft"
+     * Searches in: company name, email, employer ID, registration number, etc.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EmployerResponse> quickSearch(String searchTerm, Pageable pageable) {
+        log.info("Quick search for employers with term: {}", searchTerm);
+
+        // Build query that searches across multiple fields
+        Specification<Employer> spec = EmployerSpecification.searchEmployers(searchTerm);
+
+        // Execute query and get paginated results
+        Page<Employer> employers = employerRepository.findAll(spec, pageable);
+
+        // Convert to DTO for response
+        return employers.map(employerMapper::toResponse);
     }
 
 }

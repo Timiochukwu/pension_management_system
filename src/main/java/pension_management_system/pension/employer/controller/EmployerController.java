@@ -6,6 +6,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -136,6 +140,124 @@ public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id
 
     }
 
+    /**
+     * ADVANCED SEARCH ENDPOINT
+     *
+     * Purpose: Search employers with multiple filter criteria
+     * URL: GET /api/v1/employers/search
+     *
+     * How to use (example URLs):
+     * - Search by company name: /api/v1/employers/search?companyName=Tech&page=0&size=10
+     * - Search by city: /api/v1/employers/search?city=Lagos
+     * - Multiple filters: /api/v1/employers/search?companyName=Tech&city=Lagos&active=true
+     * - With sorting: /api/v1/employers/search?city=Lagos&sortBy=companyName&sortDirection=ASC
+     *
+     * Pagination parameters:
+     * - page: Page number (starts from 0)
+     * - size: Number of results per page (default 10)
+     * - sortBy: Field to sort by (e.g., "companyName", "createdAt")
+     * - sortDirection: ASC (ascending) or DESC (descending)
+     *
+     * All filter parameters are optional (@RequestParam(required = false))
+     * If no filters provided, returns all employers (paginated)
+     */
+    @GetMapping("/search")
+    @Operation(summary = "Search and filter employers", description = "Advanced search with multiple filter criteria and pagination")
+    public ResponseEntity<ApiResponseDto<Page<EmployerResponse>>> searchEmployers(
+            @RequestParam(required = false) String employerId,
+            @RequestParam(required = false) String companyName,
+            @RequestParam(required = false) String registrationNumber,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String industry,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String country,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        // Log the incoming request for debugging
+        log.info("Searching employers with filters - page: {}, size: {}", page, size);
 
+        // STEP 1: Determine sort direction (ASC or DESC)
+        // equalsIgnoreCase makes it case-insensitive ("desc", "DESC", "Desc" all work)
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        // STEP 2: Create Pageable object
+        // This tells Spring Data JPA which page to fetch and how to sort
+        // Example: PageRequest.of(0, 10, Sort.by(ASC, "companyName"))
+        //          means: "Give me first page, 10 items, sorted by company name ascending"
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // STEP 3: Call service to execute search
+        // Service builds dynamic query and returns paginated results
+        Page<EmployerResponse> employers = employerService.searchEmployers(
+                employerId, companyName, registrationNumber, email, phoneNumber,
+                industry, active, city, state, country, pageable
+        );
+
+        // STEP 4: Wrap result in standard API response format
+        ApiResponseDto<Page<EmployerResponse>> apiResponseDto = ApiResponseDto.<Page<EmployerResponse>>builder()
+                .success(true)
+                .message("Employers search completed successfully")
+                .data(employers)  // Contains: content (list of employers), totalPages, totalElements, etc.
+                .build();
+
+        // STEP 5: Return HTTP 200 OK with search results
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    }
+
+    /**
+     * QUICK SEARCH ENDPOINT
+     *
+     * Purpose: Simple one-keyword search across multiple fields
+     * URL: GET /api/v1/employers/quick-search
+     *
+     * How to use:
+     * - /api/v1/employers/quick-search?searchTerm=microsoft
+     * - /api/v1/employers/quick-search?searchTerm=tech&page=0&size=20
+     *
+     * What it searches:
+     * - Company name
+     * - Employer ID
+     * - Email
+     * - Registration number
+     * - Industry
+     * - Phone number
+     *
+     * Perfect for: Search boxes where user types one term
+     */
+    @GetMapping("/quick-search")
+    @Operation(summary = "Quick search employers", description = "Search employers by keyword across multiple fields")
+    public ResponseEntity<ApiResponseDto<Page<EmployerResponse>>> quickSearch(
+            @RequestParam String searchTerm,  // required parameter - must be provided
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        log.info("Quick search for employers with term: {}", searchTerm);
+
+        // Determine sort direction
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        // Create pagination settings
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // Execute quick search through service
+        Page<EmployerResponse> employers = employerService.quickSearch(searchTerm, pageable);
+
+        // Wrap and return results
+        ApiResponseDto<Page<EmployerResponse>> apiResponseDto = ApiResponseDto.<Page<EmployerResponse>>builder()
+                .success(true)
+                .message("Quick search completed successfully")
+                .data(employers)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    }
 
 }
