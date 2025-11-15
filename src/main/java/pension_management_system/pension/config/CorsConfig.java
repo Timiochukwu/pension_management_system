@@ -28,14 +28,17 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow frontend origins
-        configuration.setAllowedOriginPatterns(Arrays.asList(
+        // Allow specific origins (more reliable than patterns)
+        configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173",           // Vite dev server
             "http://localhost:3000",           // Alternative React dev server
-            "http://localhost:4173",           // Vite preview
+            "http://localhost:4173"            // Vite preview
+        ));
+
+        // For production, use patterns
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "https://*.vercel.app",            // Vercel deployments
-            "https://*.netlify.app",           // Netlify deployments
-            "https://yourdomain.com"           // Production domain (update this)
+            "https://*.netlify.app"            // Netlify deployments
         ));
 
         // Allow all HTTP methods
@@ -43,14 +46,8 @@ public class CorsConfig {
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
 
-        // Allow headers
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type",
-            "Accept",
-            "X-Requested-With",
-            "Cache-Control"
-        ));
+        // Allow all headers (wildcard for development)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
 
         // Expose headers to frontend
         configuration.setExposedHeaders(Arrays.asList(
@@ -66,7 +63,7 @@ public class CorsConfig {
 
         // Apply CORS configuration to all API endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
