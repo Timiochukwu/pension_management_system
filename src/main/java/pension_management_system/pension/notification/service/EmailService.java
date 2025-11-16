@@ -3,6 +3,7 @@ package pension_management_system.pension.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -43,10 +44,12 @@ import jakarta.mail.internet.MimeMessage;
  * @RequiredArgsConstructor - Lombok constructor injection
  * @Slf4j - Logging
  * @Async - Makes methods run asynchronously (don't block)
+ * @ConditionalOnProperty - Only loads when email is enabled
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "spring.mail.enabled", havingValue = "true", matchIfMissing = false)
 public class EmailService {
 
     /**
