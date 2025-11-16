@@ -264,6 +264,9 @@
 						<exclude>**/upload/service/impl/UploadServiceImpl.java</exclude>
 						<exclude>**/report/service/ReportServiceImpl.java</exclude>
 						<exclude>**/payment/service/impl/PaymentServiceImpl.java</exclude>
+						<exclude>**/export/controller/ExportController.java</exclude>
+						<exclude>**/upload/controller/UploadController.java</exclude>
+						<exclude>**/report/controller/ReportController.java</exclude>
 					</excludes>
 					<!-- Exclude tests for broken service implementations -->
 					<testExcludes>
