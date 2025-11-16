@@ -119,10 +119,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     public MemberStatusDistribution getMemberStatusDistribution() {
         log.info("Generating member status distribution");
 
-        Long totalMembers = memberRepository.count();
-        if (totalMembers == 0) {
-            totalMembers = 1L; // Prevent division by zero
-        }
+        Long totalMembersCount = memberRepository.count();
+        final Long totalMembers = (totalMembersCount == 0) ? 1L : totalMembersCount; // Prevent division by zero
 
         List<MemberStatusDistribution.StatusData> distribution = Arrays.stream(MemberStatus.values())
                 .map(status -> {
