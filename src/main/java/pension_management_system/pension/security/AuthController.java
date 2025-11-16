@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userDetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetails;
 import pension_management_system.pension.security.entity.User;
 import pension_management_system.pension.security.service.CustomUserDetailsService;
 import pension_management_system.pension.security.service.UserService;
