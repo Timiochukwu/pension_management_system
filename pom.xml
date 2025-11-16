@@ -264,6 +264,7 @@
 						<exclude>**/upload/service/impl/UploadServiceImpl.java</exclude>
 						<exclude>**/report/service/ReportServiceImpl.java</exclude>
 						<exclude>**/cache/CacheWarmingService.java</exclude>
+						<exclude>**/payment/service/impl/PaymentServiceImpl.java</exclude>
 					</excludes>
 					<annotationProcessorPaths>
 						<path>

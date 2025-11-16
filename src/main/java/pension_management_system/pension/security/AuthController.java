@@ -59,14 +59,14 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        log.info("Login attempt for user: {}", request.getUsername());
+        log.info("Login attempt for user: {}", request.username());
 
         try {
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
+                            request.username(),
+                            request.password()
                     )
             );
 
@@ -84,7 +84,7 @@ public class AuthController {
             // Generate JWT
             String token = jwtUtil.generateToken(userDetails);
 
-            log.info("Login successful for user: {}", request.getUsername());
+            log.info("Login successful for user: {}", request.username());
 
             // Create user info response from actual database user
             UserInfo userInfo = (user != null) ? new UserInfo(
@@ -110,7 +110,7 @@ public class AuthController {
             ));
 
         } catch (Exception e) {
-            log.error("Login failed for user {}: {}", request.getUsername(), e.getMessage());
+            log.error("Login failed for user {}: {}", request.username(), e.getMessage());
             throw e;
         }
     }
@@ -146,17 +146,17 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Registration attempt for user: {}", request.getUsername());
+        log.info("Registration attempt for user: {}", request.username());
 
         try {
             // Build user entity from request
             User user = User.builder()
-                    .username(request.getUsername())
-                    .email(request.getEmail())
-                    .password(request.getPassword())
-                    .firstName(request.getFirstName())
-                    .lastName(request.getLastName())
-                    .phoneNumber(request.getPhoneNumber())
+                    .username(request.username())
+                    .email(request.email())
+                    .password(request.password())
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .phoneNumber(request.phoneNumber())
                     .role(User.UserRole.MEMBER) // Default role for registration
                     .build();
 
@@ -177,7 +177,7 @@ public class AuthController {
             ));
 
         } catch (IllegalArgumentException e) {
-            log.error("Registration failed for user {}: {}", request.getUsername(), e.getMessage());
+            log.error("Registration failed for user {}: {}", request.username(), e.getMessage());
             throw e;
         }
     }
@@ -192,7 +192,7 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        String token = request.getToken();
+        String token = request.token();
 
         try {
             String username = jwtUtil.extractUsername(token);
