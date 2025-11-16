@@ -2,6 +2,7 @@ package pension_management_system.pension.notification.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,7 @@ import pension_management_system.pension.notification.service.TemplateEmailServi
  * @Slf4j - Logging support
  * @EventListener - Marks method as event listener
  * @Async - Runs in separate thread (non-blocking)
+ * @ConditionalOnProperty - Only loads when email is enabled
  *
  * Example Flow:
  *
@@ -57,6 +59,7 @@ import pension_management_system.pension.notification.service.TemplateEmailServi
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "spring.mail.enabled", havingValue = "true", matchIfMissing = false)
 public class EmailEventListener {
 
     /**
