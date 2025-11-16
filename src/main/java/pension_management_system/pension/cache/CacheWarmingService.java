@@ -68,8 +68,8 @@ public class CacheWarmingService {
             // Warm top employers
             analyticsService.getTopEmployers(10);
 
-            // Warm contribution trends
-            analyticsService.getContributionTrends();
+            // Warm contribution trends (last 6 months)
+            analyticsService.getContributionTrend(6);
 
             // Warm member distribution
             analyticsService.getMemberStatusDistribution();
