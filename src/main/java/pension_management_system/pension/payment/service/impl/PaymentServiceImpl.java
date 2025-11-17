@@ -3,6 +3,7 @@ package pension_management_system.pension.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.contribution.entity.Contribution;
@@ -46,11 +47,17 @@ import java.util.Map;
  * @Transactional - All methods run in database transaction
  * @RequiredArgsConstructor - Lombok constructor injection
  * @Slf4j - Logging
+ * @ConditionalOnProperty - Only load if payment gateways are enabled
  */
 @Service
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(
+    name = {"paystack.enabled", "flutterwave.enabled"},
+    havingValue = "true",
+    matchIfMissing = false
+)
 public class PaymentServiceImpl implements PaymentService {
 
     /**

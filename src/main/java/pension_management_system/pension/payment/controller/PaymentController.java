@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,12 +50,18 @@ import pension_management_system.pension.payment.service.PaymentService;
  * @Tag - Swagger/OpenAPI documentation grouping
  * @RequiredArgsConstructor - Lombok constructor injection
  * @Slf4j - Logging
+ * @ConditionalOnProperty - Only load if payment gateways are enabled
  */
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Payments", description = "Payment gateway integration APIs")
+@ConditionalOnProperty(
+    name = {"paystack.enabled", "flutterwave.enabled"},
+    havingValue = "true",
+    matchIfMissing = false
+)
 public class PaymentController {
 
     /**
