@@ -113,7 +113,7 @@ public class ExportServiceImpl implements ExportService {
                     member.getPhoneNumber(),
                     member.getDateOfBirth().format(DATE_FORMATTER),
                     member.getMemberStatus().toString(),
-                    String.valueOf(member.isActive()),
+                    String.valueOf(member.getActive()),
                     member.getEmployer() != null ? member.getEmployer().getCompanyName() : "N/A",
                     member.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             };
@@ -143,7 +143,7 @@ public class ExportServiceImpl implements ExportService {
                     employer.getEmail(),
                     employer.getPhoneNumber(),
                     employer.getIndustry(),
-                    String.valueOf(employer.isActive()),
+                    String.valueOf(employer.getActive()),
                     String.valueOf(employer.getMembers().size()),
                     employer.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             };
@@ -213,7 +213,7 @@ public class ExportServiceImpl implements ExportService {
             row.createCell(5).setCellValue(member.getPhoneNumber());
             row.createCell(6).setCellValue(member.getDateOfBirth().format(DATE_FORMATTER));
             row.createCell(7).setCellValue(member.getMemberStatus().toString());
-            row.createCell(8).setCellValue(member.isActive());
+            row.createCell(8).setCellValue(member.getActive());
             row.createCell(9).setCellValue(member.getEmployer() != null ? member.getEmployer().getCompanyName() : "N/A");
             row.createCell(10).setCellValue(member.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         }
@@ -255,7 +255,7 @@ public class ExportServiceImpl implements ExportService {
             row.createCell(4).setCellValue(employer.getEmail());
             row.createCell(5).setCellValue(employer.getPhoneNumber());
             row.createCell(6).setCellValue(employer.getIndustry());
-            row.createCell(7).setCellValue(employer.isActive());
+            row.createCell(7).setCellValue(employer.getActive());
             row.createCell(8).setCellValue(employer.getMembers().size());
             row.createCell(9).setCellValue(employer.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         }
@@ -343,7 +343,7 @@ public class ExportServiceImpl implements ExportService {
             table.addCell(member.getEmail());
             table.addCell(member.getPhoneNumber());
             table.addCell(member.getMemberStatus().toString());
-            table.addCell(String.valueOf(member.isActive()));
+            table.addCell(String.valueOf(member.getActive()));
         }
 
         document.add(table);
@@ -380,7 +380,7 @@ public class ExportServiceImpl implements ExportService {
             table.addCell(employer.getCompanyName());
             table.addCell(employer.getRegistrationNumber());
             table.addCell(employer.getEmail());
-            table.addCell(String.valueOf(employer.isActive()));
+            table.addCell(String.valueOf(employer.getActive()));
         }
 
         document.add(table);
