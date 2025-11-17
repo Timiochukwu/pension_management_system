@@ -128,15 +128,15 @@ public class MetricsService {
                 .register(meterRegistry);
 
         // Database-backed gauges (fetched on-demand)
-        Gauge.builder("pension.members.total", memberRepository, repo -> repo.count())
+        Gauge.builder("pension.members.count", memberRepository, repo -> repo.count())
                 .description("Total number of members")
                 .register(meterRegistry);
 
-        Gauge.builder("pension.contributions.total", contributionRepository, repo -> repo.count())
+        Gauge.builder("pension.contributions.count", contributionRepository, repo -> repo.count())
                 .description("Total number of contributions")
                 .register(meterRegistry);
 
-        Gauge.builder("pension.payments.total", paymentRepository, repo -> repo.count())
+        Gauge.builder("pension.payments.count", paymentRepository, repo -> repo.count())
                 .description("Total number of payments")
                 .register(meterRegistry);
     }
