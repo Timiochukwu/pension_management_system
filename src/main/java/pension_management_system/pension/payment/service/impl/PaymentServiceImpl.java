@@ -264,7 +264,6 @@ public class PaymentServiceImpl implements PaymentService {
                 // STEP 6: Update contribution status
                 Contribution contribution = payment.getContribution();
                 contribution.setStatus(ContributionStatus.COMPLETED);
-                contribution.setPaymentReference(reference);
                 contributionRepository.save(contribution);
 
                 log.info("Contribution marked as completed: {}", contribution.getId());

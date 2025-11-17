@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -430,9 +431,9 @@ public class UploadServiceImpl implements UploadService {
                     }
 
                     // Parse date
-                    LocalDate contributionDate;
+                    LocalDateTime contributionDate;
                     try {
-                        contributionDate = LocalDate.parse(dateStr, DATE_FORMATTER);
+                        contributionDate = LocalDate.parse(dateStr, DATE_FORMATTER).atStartOfDay();
                     } catch (DateTimeParseException e) {
                         result.addError(rowNumber, "Invalid date format. Use yyyy-MM-dd");
                         result.setFailedImports(result.getFailedImports() + 1);
