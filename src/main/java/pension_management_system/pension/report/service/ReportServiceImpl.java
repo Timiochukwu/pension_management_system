@@ -5,7 +5,6 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.opencsv.CSVWriter;
@@ -383,7 +382,7 @@ public class ReportServiceImpl implements ReportService {
             // ADD HEADER ROW
             // Header cells with bold text and gray background
             for (String header : headers) {
-                Cell headerCell = new Cell()
+                com.itextpdf.layout.element.Cell headerCell = new com.itextpdf.layout.element.Cell()
                         .add(new Paragraph(header).setBold())
                         .setBackgroundColor(com.itextpdf.kernel.colors.ColorConstants.LIGHT_GRAY)
                         .setTextAlignment(TextAlignment.CENTER);
@@ -395,7 +394,7 @@ public class ReportServiceImpl implements ReportService {
             for (int i = 1; i < reportData.size(); i++) {
                 String[] row = reportData.get(i);
                 for (String cellData : row) {
-                    table.addCell(new Cell().add(new Paragraph(cellData)));
+                    table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(cellData)));
                 }
             }
 

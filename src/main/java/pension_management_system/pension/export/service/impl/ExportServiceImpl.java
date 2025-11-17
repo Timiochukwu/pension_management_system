@@ -5,7 +5,6 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
@@ -332,7 +331,7 @@ public class ExportServiceImpl implements ExportService {
         // Add headers
         String[] headers = {"ID", "Member ID", "Name", "Email", "Phone", "Status", "Active"};
         for (String header : headers) {
-            table.addHeaderCell(new Cell().add(new Paragraph(header).setBold()));
+            table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header).setBold()));
         }
 
         // Add data
@@ -371,7 +370,7 @@ public class ExportServiceImpl implements ExportService {
 
         String[] headers = {"ID", "Employer ID", "Company Name", "Reg Number", "Email", "Active"};
         for (String header : headers) {
-            table.addHeaderCell(new Cell().add(new Paragraph(header).setBold()));
+            table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header).setBold()));
         }
 
         for (Employer employer : employers) {
@@ -408,7 +407,7 @@ public class ExportServiceImpl implements ExportService {
 
         String[] headers = {"ID", "Reference", "Member", "Amount", "Type", "Status"};
         for (String header : headers) {
-            table.addHeaderCell(new Cell().add(new Paragraph(header).setBold()));
+            table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header).setBold()));
         }
 
         for (Contribution contribution : contributions) {
