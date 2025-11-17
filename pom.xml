@@ -258,17 +258,6 @@
 					<compilerArgs>
 						<arg>--enable-preview</arg>
 					</compilerArgs>
-					<!-- Temporarily exclude broken files -->
-					<excludes>
-						<exclude>**/export/service/impl/ExportServiceImpl.java</exclude>
-						<exclude>**/upload/service/impl/UploadServiceImpl.java</exclude>
-						<exclude>**/report/service/ReportServiceImpl.java</exclude>
-						<exclude>**/payment/service/impl/PaymentServiceImpl.java</exclude>
-						<exclude>**/export/controller/ExportController.java</exclude>
-						<exclude>**/upload/controller/UploadController.java</exclude>
-						<exclude>**/report/controller/ReportController.java</exclude>
-						<exclude>**/payment/controller/PaymentController.java</exclude>
-					</excludes>
 					<!-- Exclude tests for broken service implementations -->
 					<testExcludes>
 						<testExclude>**/payment/service/PaymentServiceImplTest.java</testExclude>
