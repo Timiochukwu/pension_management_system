@@ -77,8 +77,9 @@ public class UserService {
         User savedUser = userRepository.save(user);
         log.info("User registered successfully: {}", savedUser.getUsername());
 
-        // Clear password before returning
-        savedUser.setPassword(null);
+        // Note: Don't clear password here - savedUser is a managed entity
+        // Clearing it would trigger an UPDATE that sets password=null
+        // The controller maps to UserResponse DTO which excludes password
         return savedUser;
     }
 
