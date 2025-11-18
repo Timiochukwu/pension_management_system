@@ -30,6 +30,14 @@ public interface ContributionService {
     List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
 
     /**
+     * Get all contributions with pagination
+     *
+     * @param pageable Pagination settings
+     * @return Page containing all contributions
+     */
+    Page<ContributionResponse> getAllContributions(Pageable pageable);
+
+    /**
      * Search and filter contributions with pagination
      *
      * Allows filtering by multiple criteria to find specific contributions

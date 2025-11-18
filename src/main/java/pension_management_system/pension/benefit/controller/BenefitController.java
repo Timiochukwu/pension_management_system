@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +83,30 @@ public class BenefitController {
                 .success(true)
                 .message("Benefits retrieved successfully")
                 .data(benefits)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/claims")
+    @Operation(summary = "Get all benefit claims with pagination", description = "Retrieve all benefit claims with pagination support")
+    public ResponseEntity<ApiResponseDto<Page<BenefitResponse>>> getAllClaims(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        log.info("GET /api/v1/benefits/claims - page: {}, size: {}", page, size);
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<BenefitResponse> claims = benefitService.getAllBenefitsWithPagination(pageable);
+
+        ApiResponseDto<Page<BenefitResponse>> apiResponse = ApiResponseDto.<Page<BenefitResponse>>builder()
+                .success(true)
+                .message("All benefit claims retrieved successfully")
+                .data(claims)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

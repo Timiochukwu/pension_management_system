@@ -45,6 +45,30 @@ public class ContributionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDto);
     }
 
+    @GetMapping
+    @Operation(summary = "Get all contributions", description = "Retrieve all contributions with pagination")
+    public ResponseEntity<ApiResponseDto<Page<ContributionResponse>>> getAllContributions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        log.info("GET /api/v1/contributions - page: {}, size: {}", page, size);
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<ContributionResponse> contributions = contributionService.getAllContributions(pageable);
+
+        ApiResponseDto<Page<ContributionResponse>> apiResponseDto = ApiResponseDto.<Page<ContributionResponse>>builder()
+                .success(true)
+                .message("All contributions retrieved successfully")
+                .data(contributions)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    }
+
     /**
      * ADVANCED SEARCH ENDPOINT FOR CONTRIBUTIONS
      *

@@ -160,18 +160,25 @@ public class MemberController {
     }
 
     @GetMapping
-    @Operation(summary = "Fetch all active members", description = "Fetch all active members in the pension system")
-    public  ResponseEntity<ApiResponseDto<List<MemberResponse>>> getAllActiveMembers() {
-        log.info("Fetch all active members");
-        log.info("GET /api/v1/members");
+    @Operation(summary = "Fetch all active members", description = "Fetch all active members in the pension system with pagination")
+    public ResponseEntity<ApiResponseDto<Page<MemberResponse>>> getAllActiveMembers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        log.info("GET /api/v1/members - page: {}, size: {}", page, size);
 
-        List<MemberResponse> members = memberService.getAllActiveMembers();
-        ApiResponseDto<List<MemberResponse>> apiResponseDto = ApiResponseDto.<List<MemberResponse>>builder()
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<MemberResponse> members = memberService.getAllActiveMembersWithPagination(pageable);
+        ApiResponseDto<Page<MemberResponse>> apiResponseDto = ApiResponseDto.<Page<MemberResponse>>builder()
                 .success(true)
-                .message("All active members fetch successfully")
+                .message("All active members fetched successfully")
                 .data(members)
                 .build();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
     @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")

@@ -1,5 +1,7 @@
 package pension_management_system.pension.benefit.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pension_management_system.pension.benefit.dto.BenefitRequest;
 import pension_management_system.pension.benefit.dto.BenefitResponse;
 import pension_management_system.pension.benefit.entity.BenefitStatus;
@@ -21,6 +23,7 @@ public interface BenefitService {
     // READ
     BenefitResponse getBenefitById(Long id);
     List<BenefitResponse> getAllBenefits();
+    Page<BenefitResponse> getAllBenefitsWithPagination(Pageable pageable);
     List<BenefitResponse> getBenefitsByMemberId(Long memberId);
     List<BenefitResponse> getBenefitsByStatus(BenefitStatus status);
 

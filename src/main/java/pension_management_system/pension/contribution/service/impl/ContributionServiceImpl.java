@@ -135,6 +135,17 @@ public class ContributionServiceImpl implements ContributionService {
      *   AND contribution_date BETWEEN '2025-01-01' AND '2025-12-31'
      *   AND contribution_amount >= 1000
      */
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ContributionResponse> getAllContributions(Pageable pageable) {
+        log.info("Fetching all contributions with pagination - page: {}, size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Contribution> contributions = contributionRepository.findAll(pageable);
+        return contributions.map(contributionMapper::toResponse);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Page<ContributionResponse> searchContributions(

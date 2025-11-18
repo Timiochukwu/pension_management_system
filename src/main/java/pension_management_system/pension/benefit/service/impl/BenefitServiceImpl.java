@@ -2,6 +2,8 @@ package pension_management_system.pension.benefit.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.benefit.dto.BenefitRequest;
@@ -71,6 +73,16 @@ public class BenefitServiceImpl implements BenefitService {
         return benefitRepository.findAll().stream()
                 .map(benefitMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BenefitResponse> getAllBenefitsWithPagination(Pageable pageable) {
+        log.info("Fetching all benefits with pagination - page: {}, size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Benefit> benefits = benefitRepository.findAll(pageable);
+        return benefits.map(benefitMapper::toResponse);
     }
 
     @Override

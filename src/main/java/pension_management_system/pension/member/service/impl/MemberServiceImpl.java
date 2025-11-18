@@ -160,6 +160,14 @@ public class MemberServiceImpl implements MemberService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> getAllActiveMembersWithPagination(Pageable pageable) {
+        log.info("Fetching all active members with pagination - page: {}, size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        Page<Member> members = memberRepository.findByActive(true, pageable);
+        return members.map(memberMapper::toResponse);
+    }
 
     @Override
     @Transactional
