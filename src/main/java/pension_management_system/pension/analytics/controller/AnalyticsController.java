@@ -35,6 +35,12 @@ public class AnalyticsController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Operation(summary = "Get dashboard (alias)", description = "Get overall statistics for the dashboard (alias endpoint)")
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponseDto<DashboardStatisticsResponse>> getDashboard() {
+        return getDashboardStatistics();
+    }
+
     @Operation(summary = "Get contribution trend", description = "Get contribution trend for specified number of months")
     @GetMapping("/contributions/trend")
     public ResponseEntity<ApiResponseDto<ContributionTrendResponse>> getContributionTrend(
@@ -58,6 +64,13 @@ public class AnalyticsController {
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get contribution trends (alias)", description = "Get contribution trend for specified number of months (alias endpoint)")
+    @GetMapping("/contributions/trends")
+    public ResponseEntity<ApiResponseDto<ContributionTrendResponse>> getContributionTrends(
+            @RequestParam(defaultValue = "12") int months) {
+        return getContributionTrend(months);
     }
 
     @Operation(summary = "Get member status distribution", description = "Get distribution of members by status")

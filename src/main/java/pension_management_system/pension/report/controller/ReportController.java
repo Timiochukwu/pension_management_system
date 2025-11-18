@@ -208,6 +208,36 @@ public class ReportController {
     }
 
     /**
+     * GET BENEFIT CLAIMS REPORTS
+     *
+     * HTTP Method: GET
+     * URL: /api/v1/reports/claims
+     *
+     * Example: GET /api/v1/reports/claims?page=0&size=10
+     *
+     * Note: This endpoint must come before /{id} to avoid path conflict
+     */
+    @GetMapping("/claims")
+    @Operation(summary = "Get benefit claims reports", description = "Retrieve all benefit claims reports")
+    public ResponseEntity<ApiResponseDto<Page<ReportResponse>>> getBenefitClaimsReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        log.info("GET /api/v1/reports/claims - Get benefit claims reports");
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "generatedAt"));
+        Page<ReportResponse> reports = reportService.getReportsByType(ReportType.BENEFIT_CLAIMS, pageable);
+
+        ApiResponseDto<Page<ReportResponse>> apiResponse = ApiResponseDto.<Page<ReportResponse>>builder()
+                .success(true)
+                .message("Benefit claims reports retrieved successfully")
+                .data(reports)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    /**
      * GET REPORT BY ID
      *
      * HTTP Method: GET
