@@ -82,7 +82,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         log.info("Generating contribution trend for last {} months", months);
 
         LocalDate startDate = LocalDate.now().minusMonths(months);
-        List<Contribution> contributions = contributionRepository.findContributionsSinceDate(startDate);
+        List<Contribution> contributions = contributionRepository.findContributionsSinceDate(startDate.atStartOfDay());
 
         List<ContributionTrendResponse.MonthlyData> monthlyData = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();

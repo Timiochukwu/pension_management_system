@@ -66,6 +66,6 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
     List<Contribution> findByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("SELECT c FROM Contribution c WHERE c.contributionDate >= :startDate")
-    List<Contribution> findContributionsSinceDate(@Param("startDate") LocalDate startDate);
+    List<Contribution> findContributionsSinceDate(@Param("startDate") java.time.LocalDateTime startDate);
 
 }

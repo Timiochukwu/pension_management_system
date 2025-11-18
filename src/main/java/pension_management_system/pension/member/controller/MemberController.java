@@ -21,6 +21,8 @@ import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
 import pension_management_system.pension.member.entity.MemberStatus;
 import pension_management_system.pension.member.service.MemberService;
+import pension_management_system.pension.benefit.dto.BenefitResponse;
+import pension_management_system.pension.benefit.service.BenefitService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,6 +50,7 @@ public class MemberController {
     // DEPENDENCY INJECTION
     // Spring automatically injects MemberService implementation
     private final MemberService memberService;
+    private final BenefitService benefitService;
     private final RestClient.Builder builder;
 
     /**
@@ -266,6 +269,36 @@ public class MemberController {
                 .success(true)
                 .message("Quick search completed successfully")
                 .data(members)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    }
+
+    @GetMapping("/claims")
+    @Operation(summary = "Get all benefit claims", description = "Get all benefit claims across all members")
+    public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getAllClaims() {
+        log.info("GET /api/v1/members/claims - Fetching all benefit claims");
+        List<BenefitResponse> claims = benefitService.getAllBenefits();
+
+        ApiResponseDto<List<BenefitResponse>> apiResponseDto = ApiResponseDto.<List<BenefitResponse>>builder()
+                .success(true)
+                .message("All claims retrieved successfully")
+                .data(claims)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    }
+
+    @GetMapping("/{id}/claims")
+    @Operation(summary = "Get member's benefit claims", description = "Get all benefit claims for a specific member by database ID")
+    public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getMemberClaims(@PathVariable Long id) {
+        log.info("GET /api/v1/members/{}/claims - Fetching benefit claims", id);
+        List<BenefitResponse> claims = benefitService.getBenefitsByMemberId(id);
+
+        ApiResponseDto<List<BenefitResponse>> apiResponseDto = ApiResponseDto.<List<BenefitResponse>>builder()
+                .success(true)
+                .message("Member claims retrieved successfully")
+                .data(claims)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
