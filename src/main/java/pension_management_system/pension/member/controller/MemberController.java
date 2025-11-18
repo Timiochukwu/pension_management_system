@@ -115,7 +115,7 @@ public class MemberController {
     * @param request Member data from request body
     * * @return ResponseEntity with created member and 201 status
     * */
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @Operation(summary = "Update a member", description = "Update member in the pension system")
     public ResponseEntity<ApiResponseDto<MemberResponse>> updateMember(
             @PathVariable Long id, @Valid @RequestBody MemberRequest request){
@@ -173,7 +173,7 @@ public class MemberController {
                 .build();
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponseDto);
     }
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> softDeleteMember(@PathVariable Long id){
         log.info("DELETE /api/v1/members/{}", id);
@@ -185,8 +185,8 @@ public class MemberController {
        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @PutMapping("activate/{id}")
-    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
+    @PutMapping("activate/{id:\\d+}")
+    @Operation(summary = "Reactivate a member", description = "Reactivate a deactivated member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> reactivateMember(@PathVariable Long id){
         log.info("REACTIVATE /api/v1/members/{}", id);
         memberService.reactivateMember(id);
@@ -197,8 +197,8 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @PutMapping("deactivate/{id}")
-    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
+    @PutMapping("deactivate/{id:\\d+}")
+    @Operation(summary = "Deactivate a member", description = "Deactivate an active member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> deactivateMember(@PathVariable Long id){
         log.info("Deactivating /api/v1/members/{}", id);
         memberService.deactivateMember(id);
@@ -289,7 +289,7 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @GetMapping("/{id}/claims")
+    @GetMapping("/{id:\\d+}/claims")
     @Operation(summary = "Get member's benefit claims", description = "Get all benefit claims for a specific member by database ID")
     public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getMemberClaims(@PathVariable Long id) {
         log.info("GET /api/v1/members/{}/claims - Fetching benefit claims", id);
