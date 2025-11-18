@@ -56,7 +56,7 @@ public class BenefitController {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Get benefit by ID")
     public ResponseEntity<ApiResponseDto<BenefitResponse>> getBenefit(@PathVariable Long id) {
         BenefitResponse response = benefitService.getBenefitById(id);
@@ -84,7 +84,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @GetMapping("/member/{memberId}")
+    @GetMapping("/member/{memberId:\\d+}")
     @Operation(summary = "Get benefits by member ID", description = "Get all benefit claims for a specific member")
     public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getMemberBenefits(@PathVariable Long memberId) {
         List<BenefitResponse> benefits = benefitService.getBenefitsByMemberId(memberId);
@@ -112,7 +112,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @Operation(summary = "Update benefit")
     public ResponseEntity<ApiResponseDto<BenefitResponse>> updateBenefit(
             @PathVariable Long id,
@@ -129,7 +129,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PutMapping("/{id}/approve")
+    @PutMapping("/{id:\\d+}/approve")
     @Operation(summary = "Approve benefit", description = "Approve benefit claim and set approved amount")
     public ResponseEntity<ApiResponseDto<BenefitResponse>> approveBenefit(
             @PathVariable Long id,
@@ -147,7 +147,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PutMapping("/{id}/reject")
+    @PutMapping("/{id:\\d+}/reject")
     @Operation(summary = "Reject benefit", description = "Reject benefit claim with reason")
     public ResponseEntity<ApiResponseDto<BenefitResponse>> rejectBenefit(
             @PathVariable Long id,
@@ -165,7 +165,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PutMapping("/{id}/pay")
+    @PutMapping("/{id:\\d+}/pay")
     @Operation(summary = "Mark benefit as paid")
     public ResponseEntity<ApiResponseDto<BenefitResponse>> markAsPaid(@PathVariable Long id) {
         BenefitResponse response = benefitService.markAsPaid(id);
@@ -179,7 +179,7 @@ public class BenefitController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Delete benefit")
     public ResponseEntity<ApiResponseDto<Void>> deleteBenefit(@PathVariable Long id) {
         benefitService.deleteBenefit(id);

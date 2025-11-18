@@ -47,7 +47,7 @@ public class WebhookController {
     }
 
     @Operation(summary = "Delete webhook", description = "Delete a webhook registration")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteWebhook(@PathVariable Long id) {
         webhookService.deleteWebhook(id);

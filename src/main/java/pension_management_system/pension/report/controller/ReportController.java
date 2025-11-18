@@ -269,7 +269,7 @@ public class ReportController {
      * - Converts string → Long automatically
      * - Example: /api/v1/reports/123 → id = 123L
      */
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Get report by ID", description = "Retrieve report details by its unique identifier")
     public ResponseEntity<ApiResponseDto<ReportResponse>> getReportById(@PathVariable Long id) {
 
@@ -588,7 +588,7 @@ public class ReportController {
      * - Admin can delete any report
      * - Regular user can only delete their own reports
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Delete report", description = "Delete a report and its associated file")
     public ResponseEntity<ApiResponseDto<Void>> deleteReport(@PathVariable Long id) {
 
