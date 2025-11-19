@@ -29,6 +29,17 @@ public interface ContributionRepository extends JpaRepository<Contribution, Long
         @Param("month")  int month
     );
 
+    @Query("SELECT c FROM Contribution c WHERE c.member.id = :memberId " +
+            "AND c.contributionType = :type " +
+            "AND YEAR(c.contributionDate) = :year " +
+            "AND MONTH(c.contributionDate) = :month")
+    Optional<Contribution> findMonthlyContributionByMemberIdAndYearMonth(
+        @Param("memberId") Long memberId,
+        @Param("type") ContributionType type,
+        @Param("year") int year,
+        @Param("month")  int month
+    );
+
     @Query("SELECT SUM(c.contributionAmount) FROM Contribution c WHERE c.member =:member")
     BigDecimal getTotalContributionsByMember(
             @Param("member") Member member

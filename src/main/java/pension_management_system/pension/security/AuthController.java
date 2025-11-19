@@ -34,6 +34,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final pension_management_system.pension.security.repository.UserRepository userRepository;
 
     /**
      * LOGIN ENDPOINT
@@ -198,23 +199,27 @@ public class AuthController {
             String username = jwtUtil.extractUsername(token);
 
             if (username != null && !jwtUtil.isTokenExpired(token)) {
-                // Token still valid, generate new one
-                // Note: Load user from database in real implementation
+                // Load actual user from database
+                User dbUser = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+                // Generate new token
                 org.springframework.security.core.userdetails.User user =
                         new org.springframework.security.core.userdetails.User(
                                 username, "", java.util.List.of());
 
                 String newToken = jwtUtil.generateToken(user);
 
-                // Create user info for refresh response
+                // Create user info with actual data from database
                 UserInfo userInfo = new UserInfo(
-                        1L,  // TODO: Get actual user ID from database
-                        "Admin",  // TODO: Get actual first name from database
-                        "User",   // TODO: Get actual last name from database
-                        username,
-                        "ADMIN"  // TODO: Get actual role from database
+                        dbUser.getId(),
+                        dbUser.getFirstName(),
+                        dbUser.getLastName(),
+                        dbUser.getEmail(),
+                        dbUser.getRole().name()
                 );
 
+                log.info("Token refreshed successfully for user: {}", username);
                 return ResponseEntity.ok(new AuthResponse(newToken, "Bearer", username, userInfo));
             }
 

@@ -65,4 +65,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * Use case: Scheduled job to mark old pending payments as expired
      */
     List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime dateTime);
+
+    /**
+     * Find all payments by status
+     *
+     * Generated SQL:
+     * SELECT * FROM payments WHERE status = ?
+     *
+     * Use case: Find all pending payments for synchronization
+     */
+    List<Payment> findByStatus(PaymentStatus status);
 }

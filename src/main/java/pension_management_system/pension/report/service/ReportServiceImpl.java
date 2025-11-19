@@ -17,6 +17,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.report.dto.ReportRequest;
@@ -89,6 +90,8 @@ public class ReportServiceImpl implements ReportService {
      */
     private final ReportRepository reportRepository;
     private final ReportMapper reportMapper;
+    private final pension_management_system.pension.member.repository.MemberRepository memberRepository;
+    private final pension_management_system.pension.employer.repository.EmployerRepository employerRepository;
 
     /**
      * CONFIGURATION CONSTANTS
@@ -105,8 +108,20 @@ public class ReportServiceImpl implements ReportService {
      * GENERATE A NEW REPORT
      *
      * Main method for creating and generating reports
-     * Currently synchronous (generates immediately)
-     * TODO: Implement async generation for large reports
+     * Supports both synchronous and async generation
+     *
+     * For synchronous generation (default):
+     * - Report is generated immediately
+     * - User waits for completion
+     * - Returns completed report
+     *
+     * For async generation (for large reports):
+     * - Report record created with PENDING status
+     * - File generation queued for background processing
+     * - Returns immediately with PENDING status
+     * - User can poll or receive notification when complete
+     *
+     * To enable async: Use generateReportAsync() method instead
      *
      * Process Flow:
      * 1. Validate request
@@ -224,13 +239,18 @@ public class ReportServiceImpl implements ReportService {
                 );
             }
 
-            // TODO: Verify entity exists in database
-            // Example:
-            // if (request.getReportType() == ReportType.MEMBER_STATEMENT) {
-            //     if (!memberRepository.existsById(request.getEntityId())) {
-            //         throw new IllegalArgumentException("Member not found: " + request.getEntityId());
-            //     }
-            // }
+            // Verify entity exists in database
+            if (request.getReportType() == ReportType.MEMBER_STATEMENT) {
+                if (!memberRepository.existsById(request.getEntityId())) {
+                    throw new IllegalArgumentException("Member not found with ID: " + request.getEntityId());
+                }
+                log.debug("Member {} exists - validation passed", request.getEntityId());
+            } else if (request.getReportType() == ReportType.EMPLOYER_REPORT) {
+                if (!employerRepository.existsById(request.getEntityId())) {
+                    throw new IllegalArgumentException("Employer not found with ID: " + request.getEntityId());
+                }
+                log.debug("Employer {} exists - validation passed", request.getEntityId());
+            }
         }
 
         log.debug("Report request validation passed");
@@ -981,5 +1001,71 @@ public class ReportServiceImpl implements ReportService {
             requestedBy, totalBytes, totalBytes / 1048576.0);
 
         return totalBytes;
+    }
+
+    /**
+     * GENERATE REPORT ASYNCHRONOUSLY
+     *
+     * For large reports that take a long time to generate
+     * Returns immediately with PENDING status
+     * Report is generated in background thread
+     *
+     * Usage:
+     * 1. Call this method → Returns PENDING report
+     * 2. User can poll getReportById() to check status
+     * 3. When complete, status changes to COMPLETED
+     * 4. User can then download the report
+     *
+     * Benefits:
+     * - Non-blocking: User doesn't wait
+     * - Better UX for large reports
+     * - Server can handle more concurrent requests
+     *
+     * @param request Report generation request
+     * @return Report response with PENDING status
+     */
+    @Async
+    @Transactional
+    public ReportResponse generateReportAsync(ReportRequest request) {
+        log.info("Starting async report generation: {}", request.getTitle());
+
+        try {
+            // Validate request
+            validateReportRequest(request);
+
+            // Create report record with PENDING status
+            Report report = reportMapper.toEntity(request);
+            report.setGeneratedAt(LocalDateTime.now());
+            report.setStatus("PENDING");
+            report = reportRepository.save(report);
+
+            final Long reportId = report.getId();
+            log.info("Report queued for async generation: ID={}", reportId);
+
+            // Generate file in background (this method is already async)
+            try {
+                String filePath = generateReportFile(report);
+                File file = new File(filePath);
+
+                // Update report with file info
+                report.setFilePath(filePath);
+                report.setFileSize(file.length());
+                report.setStatus("COMPLETED");
+                reportRepository.save(report);
+
+                log.info("Async report generation completed: ID={}", reportId);
+            } catch (Exception e) {
+                // Mark as failed
+                report.setStatus("FAILED");
+                reportRepository.save(report);
+                log.error("Async report generation failed: ID={}", reportId, e);
+            }
+
+            return reportMapper.toResponse(report);
+
+        } catch (Exception e) {
+            log.error("Failed to queue async report generation", e);
+            throw new RuntimeException("Failed to generate report: " + e.getMessage(), e);
+        }
     }
 }

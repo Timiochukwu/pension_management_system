@@ -70,6 +70,9 @@ public class FlutterwaveService {
     @Value("${flutterwave.base.url}")
     private String baseUrl;
 
+    @Value("${flutterwave.webhook.secret.hash:${flutterwave.secret.key}}")
+    private String webhookSecretHash;
+
     /**
      * INITIALIZE PAYMENT
      *
@@ -299,17 +302,16 @@ public class FlutterwaveService {
     public boolean verifyWebhook(String secretHash) {
         log.debug("Verifying Flutterwave webhook");
 
-        // Get configured secret hash
-        // In production, this should come from @Value
-        String configuredHash = secretKey; // For simplicity, using secret key
-        // TODO: Add separate flutterwave.webhook.secret.hash property
-
-        boolean isValid = configuredHash.equals(secretHash);
+        // Use dedicated webhook secret hash property
+        // Falls back to secret key if not specifically configured
+        boolean isValid = webhookSecretHash.equals(secretHash);
 
         if (isValid) {
             log.info("Flutterwave webhook verified successfully");
         } else {
             log.warn("Flutterwave webhook verification failed! Possible fraud attempt.");
+            log.debug("Expected hash: {}, Received hash: {}", webhookSecretHash.substring(0, 10) + "...",
+                     secretHash != null ? secretHash.substring(0, 10) + "..." : "null");
         }
 
         return isValid;
