@@ -232,16 +232,20 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                             ? contribution.getMember().getFirstName() + " " + contribution.getMember().getLastName()
                             : "Unknown";
 
+                    String contributionTypeStr = contribution.getContributionType() != null
+                            ? contribution.getContributionType().toString().toLowerCase()
+                            : "unknown";
+
                     String description = String.format("%s made a %s contribution",
                             memberName,
-                            contribution.getType().toString().toLowerCase());
+                            contributionTypeStr);
 
                     return RecentActivityResponse.ActivityItem.builder()
                             .activityType("CONTRIBUTION")
                             .description(description)
                             .amount(contribution.getContributionAmount())
                             .timestamp(contribution.getContributionDate())
-                            .entityId(contribution.getContributionId())
+                            .entityId(contribution.getId() != null ? contribution.getId().toString() : null)
                             .entityName(memberName)
                             .build();
                 })
