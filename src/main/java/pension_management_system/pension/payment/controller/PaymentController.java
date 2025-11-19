@@ -6,6 +6,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +74,70 @@ public class PaymentController {
      * Spring automatically injects PaymentService implementation
      */
     private final PaymentService paymentService;
+
+    /**
+     * GET ALL PAYMENTS
+     *
+     * HTTP Method: GET
+     * URL: /api/v1/payments
+     *
+     * Query Parameters:
+     * - page: Page number (default: 0)
+     * - size: Page size (default: 20)
+     *
+     * Example: GET /api/v1/payments?page=0&size=20
+     *
+     * Success Response (HTTP 200):
+     * {
+     *   "success": true,
+     *   "message": "Payments retrieved successfully",
+     *   "data": {
+     *     "content": [...],
+     *     "totalElements": 100,
+     *     "totalPages": 5,
+     *     "number": 0,
+     *     "size": 20
+     *   }
+     * }
+     *
+     * @param page Page number
+     * @param size Page size
+     * @return Page of payments
+     */
+    @GetMapping
+    @Operation(
+            summary = "Get all payments",
+            description = "Retrieve all payments with pagination"
+    )
+    public ResponseEntity<ApiResponseDto<Page<PaymentResponse>>> getAllPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        log.info("GET /api/v1/payments - page: {}, size: {}", page, size);
+
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<PaymentResponse> payments = paymentService.getAllPayments(pageable);
+
+            ApiResponseDto<Page<PaymentResponse>> apiResponse = ApiResponseDto.<Page<PaymentResponse>>builder()
+                    .success(true)
+                    .message("Payments retrieved successfully")
+                    .data(payments)
+                    .build();
+
+            return ResponseEntity.ok(apiResponse);
+
+        } catch (Exception e) {
+            log.error("Error fetching payments: {}", e.getMessage(), e);
+
+            ApiResponseDto<Page<PaymentResponse>> apiResponse = ApiResponseDto.<Page<PaymentResponse>>builder()
+                    .success(false)
+                    .message("Failed to retrieve payments: " + e.getMessage())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
+        }
+    }
 
     /**
      * INITIALIZE PAYMENT

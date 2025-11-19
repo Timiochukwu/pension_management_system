@@ -1,5 +1,7 @@
 package pension_management_system.pension.payment.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pension_management_system.pension.payment.dto.InitializePaymentRequest;
 import pension_management_system.pension.payment.dto.PaymentResponse;
 
@@ -13,6 +15,7 @@ import pension_management_system.pension.payment.dto.PaymentResponse;
  * - Verify payment status
  * - Handle webhook notifications
  * - Process refunds
+ * - List all payments
  */
 public interface PaymentService {
 
@@ -72,4 +75,12 @@ public interface PaymentService {
      * @return Payment details
      */
     PaymentResponse getPaymentByReference(String reference);
+
+    /**
+     * Get all payments with pagination
+     *
+     * @param pageable Pagination parameters
+     * @return Page of payment responses
+     */
+    Page<PaymentResponse> getAllPayments(Pageable pageable);
 }

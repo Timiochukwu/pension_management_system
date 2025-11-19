@@ -1,5 +1,7 @@
 package pension_management_system.pension.analytics.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -114,6 +116,7 @@ public class ContributionTrendResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MonthlyData {
 
         /**
@@ -219,11 +222,12 @@ public class ContributionTrendResponse {
         /**
          * HELPER: Calculate average contribution amount
          *
-         * Not serialized in JSON (would need @JsonIgnore to exclude)
+         * Not serialized in JSON (@JsonIgnore prevents serialization)
          * Can be computed on client or server side
          *
          * @return Average contribution amount for this month
          */
+        @JsonIgnore
         public BigDecimal getAverageAmount() {
             if (count == null || count == 0 || amount == null) {
                 return BigDecimal.ZERO;

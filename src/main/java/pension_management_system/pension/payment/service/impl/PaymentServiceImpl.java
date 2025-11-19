@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.contribution.entity.Contribution;
@@ -372,6 +374,24 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new RuntimeException("Payment not found: " + reference));
 
         return paymentMapper.toResponse(payment);
+    }
+
+    /**
+     * GET ALL PAYMENTS
+     *
+     * Retrieve all payments with pagination
+     *
+     * @param pageable Pagination parameters
+     * @return Page of payment responses
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getAllPayments(Pageable pageable) {
+        log.info("Fetching all payments - page: {}, size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Payment> payments = paymentRepository.findAll(pageable);
+        return payments.map(paymentMapper::toResponse);
     }
 
     /**
