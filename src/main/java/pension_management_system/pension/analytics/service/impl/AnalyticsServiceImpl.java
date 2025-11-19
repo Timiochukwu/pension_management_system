@@ -211,4 +211,44 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 .topEmployers(employerDataList)
                 .build();
     }
+
+    @Override
+    @Cacheable(value = "recentActivity", key = "#limit", unless = "#result == null")
+    public RecentActivityResponse getRecentActivity(int limit) {
+        log.info("Generating recent activity (limit: {})", limit);
+
+        // Get recent contributions (most recent first)
+        List<Contribution> recentContributions = contributionRepository
+                .findAll()
+                .stream()
+                .sorted((c1, c2) -> c2.getContributionDate().compareTo(c1.getContributionDate()))
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        // Convert to activity items
+        List<RecentActivityResponse.ActivityItem> activities = recentContributions.stream()
+                .map(contribution -> {
+                    String memberName = contribution.getMember() != null
+                            ? contribution.getMember().getFirstName() + " " + contribution.getMember().getLastName()
+                            : "Unknown";
+
+                    String description = String.format("%s made a %s contribution",
+                            memberName,
+                            contribution.getType().toString().toLowerCase());
+
+                    return RecentActivityResponse.ActivityItem.builder()
+                            .activityType("CONTRIBUTION")
+                            .description(description)
+                            .amount(contribution.getContributionAmount())
+                            .timestamp(contribution.getContributionDate())
+                            .entityId(contribution.getContributionId())
+                            .entityName(memberName)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return RecentActivityResponse.builder()
+                .recentActivities(activities)
+                .build();
+    }
 }

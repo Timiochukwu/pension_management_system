@@ -1,5 +1,6 @@
 package pension_management_system.pension.analytics.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -255,8 +256,12 @@ public class TopEmployersResponse {
          * - Low avg = Entry-level employees or low contribution rates
          * - Trending up = Employee promotions / salary increases
          *
+         * Note: This is a computed field, only included in JSON serialization (not deserialization)
+         * to prevent "Unrecognized field" errors when reading from cache
+         *
          * @return Average contribution per member
          */
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         public BigDecimal getAveragePerMember() {
             if (memberCount == null || memberCount == 0 || totalContributions == null) {
                 return BigDecimal.ZERO;

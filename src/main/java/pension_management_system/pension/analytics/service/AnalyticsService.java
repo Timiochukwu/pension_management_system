@@ -8,4 +8,5 @@ public interface AnalyticsService {
     MemberStatusDistribution getMemberStatusDistribution();
     ContributionByPaymentMethod getContributionByPaymentMethod();
     TopEmployersResponse getTopEmployers(int limit);
+    RecentActivityResponse getRecentActivity(int limit);
 }

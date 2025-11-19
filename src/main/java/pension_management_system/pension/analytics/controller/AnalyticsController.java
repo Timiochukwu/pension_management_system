@@ -127,4 +127,29 @@ public class AnalyticsController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @Operation(summary = "Get recent activity", description = "Get recent system activities")
+    @GetMapping("/recent-activity")
+    public ResponseEntity<ApiResponseDto<RecentActivityResponse>> getRecentActivity(
+            @RequestParam(defaultValue = "20") int limit) {
+        log.info("Received request for recent activity (limit: {})", limit);
+
+        if (limit < 1 || limit > 100) {
+            ApiResponseDto<RecentActivityResponse> response = ApiResponseDto.<RecentActivityResponse>builder()
+                    .success(false)
+                    .message("Limit must be between 1 and 100")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        RecentActivityResponse recentActivity = analyticsService.getRecentActivity(limit);
+
+        ApiResponseDto<RecentActivityResponse> response = ApiResponseDto.<RecentActivityResponse>builder()
+                .success(true)
+                .message("Recent activity retrieved successfully")
+                .data(recentActivity)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
