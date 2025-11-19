@@ -1,5 +1,7 @@
 package pension_management_system.pension.exception;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,6 +143,51 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Validation Failed")
                 .message("Invalid request parameters")
+                .path(getPath(request))
+                .errors(fieldErrors)
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * HANDLE ENTITY CONSTRAINT VIOLATIONS
+     *
+     * Thrown when: JPA/Hibernate entity validation fails during persistence
+     * Examples:
+     * - Phone number format validation fails at entity level
+     * - Email format validation fails at entity level
+     * - Custom entity constraints fail
+     *
+     * HTTP Status: 400 Bad Request
+     *
+     * This catches validation errors that occur at the database/entity level
+     * after the DTO validation has already passed.
+     *
+     * @param ex Constraint violation exception
+     * @param request HTTP request
+     * @return Error response with constraint violations
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            WebRequest request) {
+
+        log.error("Entity constraint violation: {}", ex.getMessage());
+
+        // Extract constraint violations
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String propertyPath = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            fieldErrors.put(propertyPath, message);
+        }
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message("Entity validation failed. Please check your input.")
                 .path(getPath(request))
                 .errors(fieldErrors)
                 .build();
