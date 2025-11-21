@@ -112,9 +112,9 @@ public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id
 
 }
     @PutMapping("/activate/{id}")
-    @Operation(summary = "delete an employer ")
+    @Operation(summary = "Activate an employer")
     public ResponseEntity<ApiResponseDto<Void>> activateEmployer(@PathVariable Long id){
-        log.info("DELETE /api/v1/employers - delete employer: {}", id);
+        log.info("PUT /api/v1/employers/activate/{} - activate employer", id);
         employerService.reactivateEmployer(id);
         ApiResponseDto<Void> apiResponseDto = ApiResponseDto.<Void>builder()
                 .success(true)
@@ -124,9 +124,9 @@ public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id
 
     }
     @PutMapping("/deactivate/{id}")
-    @Operation(summary = "delete an employer ")
+    @Operation(summary = "Deactivate an employer")
     public ResponseEntity<ApiResponseDto<Void>> deactivateEmployer(@PathVariable Long id){
-        log.info("DELETE /api/v1/employers - delete employer: {}", id);
+        log.info("PUT /api/v1/employers/deactivate/{} - deactivate employer", id);
         employerService.deactivateEmployer(id);
         ApiResponseDto<Void> apiResponseDto = ApiResponseDto.<Void>builder()
                 .success(true)

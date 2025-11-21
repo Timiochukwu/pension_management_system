@@ -58,11 +58,11 @@ public class ContributionServiceImpl implements ContributionService {
         Contribution savedContribution = contributionRepository.save(contribution);
         savedContribution.markAsProcessed("SYSTEM");
 
-        contributionRepository.save(contribution);
+        contributionRepository.save(savedContribution);
 
         log.info("Contribution processed successfully for member id {}", request.getMemberId(), savedContribution.getReferenceNumber());
 
-        return contributionMapper.toResponse(contribution);
+        return contributionMapper.toResponse(savedContribution);
     }
     private void validateMonthlyContribution(Member member, LocalDate contributionDate) {
         int year = contributionDate.getYear();
@@ -108,7 +108,7 @@ public class ContributionServiceImpl implements ContributionService {
         log.info("Calculating total contributions for member id {}", memberId);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
-        log.info("ssss"+ member.getId());
+        log.debug("Calculating total for member ID: {}", member.getId());
         BigDecimal total = contributionRepository.getTotalContributionsById(memberId);
         return total != null ? total : BigDecimal.ZERO;
     }
@@ -156,7 +156,7 @@ public class ContributionServiceImpl implements ContributionService {
                 .endDate(endDate)
                 .contributions(contributionResponses)
                 .totalMonthlyContribution(totalMontly)
-                .totalMonthlyContribution(totalVoluntary)
+                .totalVoluntaryContribution(totalVoluntary)
                 .grandTotal(totalContribution)
                 .numberOfContributions(contributions.size())
                 .generatedDate(LocalDate.now())

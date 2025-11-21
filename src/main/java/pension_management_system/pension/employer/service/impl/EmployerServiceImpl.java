@@ -47,8 +47,11 @@ public class EmployerServiceImpl implements EmployerService {
 
         Employer existingEmployer = employerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employer not found with ID: " + id));
-        if (request.getRegistrationNumber().equals(existingEmployer.getRegistrationNumber())) {
-            throw new IllegalArgumentException("Employer already exists with registration number: " + request.getRegistrationNumber());
+        // Only check for duplicate if registration number is being changed
+        if (!request.getRegistrationNumber().equals(existingEmployer.getRegistrationNumber())) {
+            if (employerRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
+                throw new IllegalArgumentException("Employer already exists with registration number: " + request.getRegistrationNumber());
+            }
         }
         employerMapper.updateEntityFromRequest(request, existingEmployer);
         Employer updatedEmployer = employerRepository.save(existingEmployer);
@@ -105,7 +108,7 @@ public class EmployerServiceImpl implements EmployerService {
 
     @Override
     public void deactivateEmployer(Long id) {
-        log.info("Deleting Employer by ID: {}", id);
+        log.info("Deactivating Employer by ID: {}", id);
         Employer employer = employerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employer not found with ID " + id));
         employer.deactivate();
@@ -116,12 +119,12 @@ public class EmployerServiceImpl implements EmployerService {
 
     @Override
     public void reactivateEmployer(Long id) {
-        log.info("Deleting Employer by ID: {}", id);
+        log.info("Reactivating Employer by ID: {}", id);
         Employer employer = employerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employer not found with ID " + id));
         employer.activate();
         employerRepository.save(employer);
-        log.info("Employer deactivated successfully with ID: {}", employer.getId());
+        log.info("Employer reactivated successfully with ID: {}", employer.getId());
     }
 
 }

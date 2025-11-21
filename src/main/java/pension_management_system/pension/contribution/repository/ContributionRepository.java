@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ContributionRepository extends JpaRepository<Contribution, Long> {
-    List<Contribution> findByMemberId(Member member);
+    // Renamed from findByMemberId - parameter is Member object, not ID
+    List<Contribution> findAllByMember(Member member);
     List <Contribution> findByMemberAndContributionType(Member member, ContributionType contributionType);
     @Query("SELECT c FROM Contribution c WHERE c.member = :member " +
             "AND c.contributionType = :type " +

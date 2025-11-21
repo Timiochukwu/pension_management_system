@@ -10,15 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClient;
 import pension_management_system.pension.common.dto.ApiResponseDto;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
 import pension_management_system.pension.member.service.MemberService;
 
 import java.util.List;
-
-import static java.util.stream.DoubleStream.builder;
 
 /**
  * MemberController - REST API endpoints for member management
@@ -41,7 +38,6 @@ public class MemberController {
     // DEPENDENCY INJECTION
     // Spring automatically injects MemberService implementation
     private final MemberService memberService;
-    private final RestClient.Builder builder;
 
     /**
      * CREATE NEW MEMBER
@@ -161,7 +157,7 @@ public class MemberController {
                 .message("All active members fetch successfully")
                 .data(members)
                 .build();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
@@ -176,7 +172,7 @@ public class MemberController {
     }
 
     @PutMapping("activate/{id}")
-    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
+    @Operation(summary = "Reactivate a member", description = "Reactivate a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> reactivateMember(@PathVariable Long id){
         log.info("REACTIVATE /api/v1/members/{}", id);
         memberService.reactivateMember(id);
@@ -188,7 +184,7 @@ public class MemberController {
     }
 
     @PutMapping("deactivate/{id}")
-    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
+    @Operation(summary = "Deactivate a member", description = "Deactivate a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> deactivateMember(@PathVariable Long id){
         log.info("Deactivating /api/v1/members/{}", id);
         memberService.deactivateMember(id);

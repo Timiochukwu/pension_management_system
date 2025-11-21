@@ -11,6 +11,7 @@ import pension_management_system.pension.employer.entity.Employer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 
 
 /**
@@ -149,8 +150,8 @@ public class Member {
         if (this.dateOfBirth == null) {
             return 0;
         }
-        // Simple age calculation: current year - birth year
-        return LocalDate.now().getYear() - dateOfBirth.getYear();
+        // Accurate age calculation using Period
+        return Period.between(dateOfBirth, LocalDate.now()).getYears();
     }
 
     /**
