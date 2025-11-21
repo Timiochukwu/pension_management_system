@@ -22,7 +22,7 @@ import java.io.IOException;
  *
  * Intercepts requests and validates JWT tokens
  */
-@Component
+@Component("securityJwtAuthenticationFilter")
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
