@@ -16,6 +16,8 @@ import pension_management_system.pension.member.entity.MemberStatus;
 import pension_management_system.pension.member.mapper.MemberMapper;
 import pension_management_system.pension.member.repository.MemberRepository;
 import pension_management_system.pension.member.service.MemberService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.Period;
