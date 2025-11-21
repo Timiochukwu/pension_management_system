@@ -62,7 +62,7 @@ import java.util.function.Function;
  * @Component - Spring manages this as singleton
  * @Slf4j - Logging support
  */
-@Component
+@Component("securityJwtUtil")
 @Slf4j
 public class JwtUtil {
 

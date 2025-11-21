@@ -14,7 +14,7 @@ import pension_management_system.pension.security.repository.UserRepository;
  *
  * Loads user details from database for authentication
  */
-@Service
+@Service("securityCustomUserDetailsService")
 @RequiredArgsConstructor
 @Slf4j
 public class CustomUserDetailsService implements UserDetailsService {

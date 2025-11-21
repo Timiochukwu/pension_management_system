@@ -19,7 +19,7 @@ import pension_management_system.pension.security.repository.UserRepository;
  * - Duplicate check (username/email)
  * - User updates
  */
-@Service
+@Service("securityUserService")
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
