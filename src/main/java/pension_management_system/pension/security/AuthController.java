@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
  *
  * These endpoints are PUBLIC (no authentication required)
  */
-@RestController
+@RestController("securityAuthController")
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
