@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Include Spring Boot defaults for spring profiles -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Property for log pattern with masking -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- Console appender with masking -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="pension_management_system.pension.config.LoggingMaskingConfig">
+                <pattern>${LOG_PATTERN}</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- File appender with masking -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/pension-system.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/pension-system.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="pension_management_system.pension.config.LoggingMaskingConfig">
+                <pattern>${LOG_PATTERN}</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- Async appender for better performance -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>512</queueSize>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <!-- Application loggers -->
+    <logger name="pension_management_system" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_FILE"/>
+    </root>
+</configuration>

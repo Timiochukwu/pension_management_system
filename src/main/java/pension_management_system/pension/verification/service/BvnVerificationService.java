@@ -14,6 +14,8 @@ import pension_management_system.pension.verification.dto.BvnVerificationRequest
 import pension_management_system.pension.verification.dto.BvnVerificationResponse;
 import pension_management_system.pension.verification.entity.BvnVerification;
 import pension_management_system.pension.verification.repository.BvnVerificationRepository;
+import pension_management_system.pension.exception.ResourceNotFoundException;
+import pension_management_system.pension.exception.VerificationException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,11 +83,11 @@ public class BvnVerificationService {
 
         // Get member
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> ResourceNotFoundException.member(memberId));
 
         // Check if already verified
         if (verificationRepository.existsByMemberId(memberId)) {
-            throw new RuntimeException("Member already has a BVN verification record");
+            throw VerificationException.alreadyExists();
         }
 
         // Create verification record
@@ -172,7 +174,7 @@ public class BvnVerificationService {
             log.info("BVN API call successful: {}", verification.getBvnNumber());
 
         } catch (Exception e) {
-            throw new RuntimeException("BVN API call failed: " + e.getMessage());
+            throw VerificationException.apiFailed(e.getMessage());
         }
     }
 
@@ -297,7 +299,7 @@ public class BvnVerificationService {
                     "dob", request.getDateOfBirth()
             ));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to build API request", e);
+            throw VerificationException.requestBuildFailed(e);
         }
     }
 
@@ -306,7 +308,7 @@ public class BvnVerificationService {
      */
     public BvnVerificationResponse getVerificationStatus(Long memberId) {
         BvnVerification verification = verificationRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new RuntimeException("No BVN verification found for member"));
+                .orElseThrow(() -> ResourceNotFoundException.member(memberId));
 
         return mapToResponse(verification);
     }

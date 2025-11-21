@@ -70,6 +70,14 @@ public interface MemberService {
      */
     List<MemberResponse> getAllActiveMembers();
 
+    /**
+     * Get all active members with pagination
+     *
+     * @param pageable Pagination parameters
+     * @return Page of all active members
+     */
+    Page<MemberResponse> getAllActiveMembersWithPagination(Pageable pageable);
+
 
 
     /**

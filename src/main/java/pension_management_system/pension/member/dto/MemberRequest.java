@@ -26,7 +26,7 @@ public class MemberRequest {
     private String email;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format")
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format. Must start with 1-9 and be 2-15 digits long")
     private String phoneNumber;
 
     @NotNull(message = "Date of birth is required")

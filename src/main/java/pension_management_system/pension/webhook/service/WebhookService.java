@@ -16,6 +16,7 @@ import pension_management_system.pension.webhook.entity.Webhook;
 import pension_management_system.pension.webhook.entity.WebhookDelivery;
 import pension_management_system.pension.webhook.repository.WebhookDeliveryRepository;
 import pension_management_system.pension.webhook.repository.WebhookRepository;
+import pension_management_system.pension.exception.WebhookException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -167,7 +168,7 @@ public class WebhookService {
                     return response;
                 } catch (Exception e) {
                     log.error("Webhook delivery failed: {}", e.getMessage());
-                    throw new RuntimeException(e);
+                    throw WebhookException.deliveryFailed(e);
                 }
             });
 
@@ -204,7 +205,7 @@ public class WebhookService {
             byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hash);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate HMAC signature", e);
+            throw WebhookException.signatureFailed(e);
         }
     }
 

@@ -1,5 +1,7 @@
 package pension_management_system.pension.member.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -33,6 +35,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByMemberStatus(MemberStatus memberStatus);
     //Find all active members
     List<Member> findByActiveTrue();
+    //Find all active members with pagination
+    Page<Member> findByActive(boolean active, Pageable pageable);
     //Find members by employer
 //    List<Member> findByEmployer_id(Long employerId);
 

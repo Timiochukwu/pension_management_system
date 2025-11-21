@@ -156,6 +156,14 @@ public class MemberServiceImpl implements MemberService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MemberResponse> getAllActiveMembersWithPagination(Pageable pageable) {
+        log.info("Fetching all active members with pagination - page: {}, size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        Page<Member> members = memberRepository.findByActive(true, pageable);
+        return members.map(memberMapper::toResponse);
+    }
 
     @Override
     @Transactional
@@ -213,22 +221,38 @@ public class MemberServiceImpl implements MemberService {
             log.error("Date of birth is null");
             throw new IllegalArgumentException("Date of birth is required");
         }
+
+        log.debug("Validating date of birth: {}", dateOfBirth);
+
         // STEP 2: Check if date is in the future
         if (dateOfBirth.isAfter(LocalDate.now())) {
+            log.error("Date of birth is in the future: {}", dateOfBirth);
             throw new IllegalArgumentException("Date of birth cannot be in the future");
         }
+
         // STEP 3: Calculate age using Period class (more accurate than simple year subtraction)
         // Period accounts for months and days, not just years
-        int age = Period.between(dateOfBirth, LocalDate.now()).getYears();
+        LocalDate today = LocalDate.now();
+        Period period = Period.between(dateOfBirth, today);
+        int age = period.getYears();
+
+        log.debug("Age calculation - Date of Birth: {}, Today: {}, Period: {} years {} months {} days, Age: {}",
+                  dateOfBirth, today, period.getYears(), period.getMonths(), period.getDays(), age);
 
         // STEP 4: Check age range
         if (age < 18) {
-            throw new IllegalArgumentException("Member must be at least 18 years old. Currently: " + age);
+            log.error("Age validation failed - Member is too young. Date of Birth: {}, Age: {}", dateOfBirth, age);
+            throw new IllegalArgumentException(
+                String.format("Member must be at least 18 years old. Date of Birth: %s, Current Age: %d years",
+                              dateOfBirth, age));
         }
         if (age > 70) {
-            throw new IllegalArgumentException("Member must be at most 70 years old. Currently: " + age);
+            log.error("Age validation failed - Member is too old. Date of Birth: {}, Age: {}", dateOfBirth, age);
+            throw new IllegalArgumentException(
+                String.format("Member must be at most 70 years old. Date of Birth: %s, Current Age: %d years",
+                              dateOfBirth, age));
         }
-        log.debug("Age validation is successful. Member age: {}", age);
+        log.debug("Age validation successful. Member age: {}", age);
     }
 }
 

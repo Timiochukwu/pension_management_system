@@ -37,6 +37,10 @@ public class PaymentFraudDetector {
     private final FraudDetectionService fraudDetectionService;
     private final ContributionRepository contributionRepository;
 
+    // Simple in-memory tracking (in production, use Redis or database)
+    private final java.util.Map<Long, java.util.Set<String>> memberDevices = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.Map<Long, java.util.Set<String>> memberLocations = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
      * Check payment for fraud before processing
      *
@@ -99,6 +103,20 @@ public class PaymentFraudDetector {
         // Calculate velocity (transactions per hour in last 6 hours)
         double velocity = countRecentTransactions(contributions, 6) / 6.0;
 
+        // Generate device fingerprint
+        String deviceFingerprint = generateDeviceFingerprint(userAgent, ipAddress);
+
+        // Extract location from IP (simplified - first octet)
+        String location = extractLocationFromIP(ipAddress);
+
+        // Check if device/location is new
+        boolean isNewDevice = isNewDevice(member.getId(), deviceFingerprint);
+        boolean isNewLocation = isNewLocation(member.getId(), location);
+
+        // Track this device and location for future checks
+        trackDevice(member.getId(), deviceFingerprint);
+        trackLocation(member.getId(), location);
+
         return new FraudDetectionRequest(
                 member.getId(),
                 request.getAmount(),
@@ -106,12 +124,12 @@ public class PaymentFraudDetector {
                 ipAddress,
                 userAgent,
                 LocalDateTime.now(),
-                null, // Device fingerprint (TODO: implement)
+                deviceFingerprint,
                 velocity,
                 averageAmount,
                 transactions24h,
-                false, // isNewDevice (TODO: implement device tracking)
-                false, // isNewLocation (TODO: implement location tracking)
+                isNewDevice,
+                isNewLocation,
                 deviation
         );
     }
@@ -151,5 +169,129 @@ public class PaymentFraudDetector {
         return (int) contributions.stream()
                 .filter(c -> c.getCreatedAt() != null && c.getCreatedAt().isAfter(cutoff))
                 .count();
+    }
+
+    /**
+     * Generate device fingerprint from user agent and IP
+     *
+     * Device fingerprint is a unique identifier for a device based on:
+     * - User Agent (browser, OS, device info)
+     * - IP Address
+     * - Other browser characteristics
+     *
+     * In production, consider using libraries like FingerprintJS or DeviceAtlas
+     *
+     * @param userAgent Client user agent string
+     * @param ipAddress Client IP address
+     * @return Device fingerprint hash
+     */
+    private String generateDeviceFingerprint(String userAgent, String ipAddress) {
+        if (userAgent == null || ipAddress == null) {
+            return "UNKNOWN";
+        }
+
+        // Combine user agent and IP to create a fingerprint
+        String combined = userAgent + "|" + ipAddress;
+
+        // Generate SHA-256 hash
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(combined.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            // Convert to hex string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+
+            return hexString.toString().substring(0, 32); // First 32 chars
+        } catch (Exception e) {
+            log.error("Failed to generate device fingerprint", e);
+            return "ERROR";
+        }
+    }
+
+    /**
+     * Extract location identifier from IP address
+     *
+     * Simplified implementation - uses IP range
+     * In production, use GeoIP services like MaxMind or ipapi.co
+     *
+     * @param ipAddress Client IP address
+     * @return Location identifier
+     */
+    private String extractLocationFromIP(String ipAddress) {
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            return "UNKNOWN";
+        }
+
+        // Simple approach: use first two octets of IP as location identifier
+        // e.g., 192.168.x.x -> "192.168"
+        String[] parts = ipAddress.split("\\.");
+        if (parts.length >= 2) {
+            return parts[0] + "." + parts[1];
+        }
+
+        return ipAddress;
+    }
+
+    /**
+     * Check if this device has been used by member before
+     *
+     * @param memberId Member ID
+     * @param deviceFingerprint Device fingerprint
+     * @return true if this is a new device
+     */
+    private boolean isNewDevice(Long memberId, String deviceFingerprint) {
+        java.util.Set<String> devices = memberDevices.get(memberId);
+        if (devices == null || devices.isEmpty()) {
+            return true; // First time seeing this member
+        }
+
+        return !devices.contains(deviceFingerprint);
+    }
+
+    /**
+     * Check if this location has been used by member before
+     *
+     * @param memberId Member ID
+     * @param location Location identifier
+     * @return true if this is a new location
+     */
+    private boolean isNewLocation(Long memberId, String location) {
+        java.util.Set<String> locations = memberLocations.get(memberId);
+        if (locations == null || locations.isEmpty()) {
+            return true; // First time seeing this member
+        }
+
+        return !locations.contains(location);
+    }
+
+    /**
+     * Track device for future fraud checks
+     *
+     * @param memberId Member ID
+     * @param deviceFingerprint Device fingerprint to track
+     */
+    private void trackDevice(Long memberId, String deviceFingerprint) {
+        memberDevices.computeIfAbsent(memberId, k -> new java.util.HashSet<>())
+                     .add(deviceFingerprint);
+
+        log.debug("Tracked device for member {}: {}", memberId, deviceFingerprint.substring(0, 8) + "...");
+    }
+
+    /**
+     * Track location for future fraud checks
+     *
+     * @param memberId Member ID
+     * @param location Location identifier to track
+     */
+    private void trackLocation(Long memberId, String location) {
+        memberLocations.computeIfAbsent(memberId, k -> new java.util.HashSet<>())
+                       .add(location);
+
+        log.debug("Tracked location for member {}: {}", memberId, location);
     }
 }
