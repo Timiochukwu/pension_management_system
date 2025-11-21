@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * UserRepository - Repository for User entity in security module
  */
-@Repository
+@Repository("securityUserRepository")
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
