@@ -1,5 +1,7 @@
 package pension_management_system.pension.member.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pension_management_system.pension.common.exception.MemberNotFoundException;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
