@@ -327,6 +327,98 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * HANDLE PAYMENT EXCEPTIONS
+     *
+     * HTTP Status: 422 Unprocessable Entity
+     */
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentException(
+            PaymentException ex,
+            WebRequest request) {
+
+        log.error("Payment error: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Payment Error")
+                .message(ex.getMessage())
+                .path(getPath(request))
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * HANDLE REPORT EXCEPTIONS
+     *
+     * HTTP Status: 422 Unprocessable Entity
+     */
+    @ExceptionHandler(ReportException.class)
+    public ResponseEntity<ErrorResponse> handleReportException(
+            ReportException ex,
+            WebRequest request) {
+
+        log.error("Report error: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Report Error")
+                .message(ex.getMessage())
+                .path(getPath(request))
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * HANDLE VERIFICATION EXCEPTIONS
+     *
+     * HTTP Status: 422 Unprocessable Entity
+     */
+    @ExceptionHandler(VerificationException.class)
+    public ResponseEntity<ErrorResponse> handleVerificationException(
+            VerificationException ex,
+            WebRequest request) {
+
+        log.error("Verification error: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Verification Error")
+                .message(ex.getMessage())
+                .path(getPath(request))
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * HANDLE WEBHOOK EXCEPTIONS
+     *
+     * HTTP Status: 500 Internal Server Error
+     */
+    @ExceptionHandler(WebhookException.class)
+    public ResponseEntity<ErrorResponse> handleWebhookException(
+            WebhookException ex,
+            WebRequest request) {
+
+        log.error("Webhook error: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error("Webhook Error")
+                .message(ex.getMessage())
+                .path(getPath(request))
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
      * HANDLE ILLEGAL ARGUMENT
      *
      * Thrown when: Invalid method argument

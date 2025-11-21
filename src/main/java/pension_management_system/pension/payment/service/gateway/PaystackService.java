@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import pension_management_system.pension.payment.dto.InitializePaymentRequest;
+import pension_management_system.pension.exception.PaymentException;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.Mac;
@@ -174,7 +175,7 @@ public class PaystackService {
 
         } catch (Exception e) {
             log.error("Error initializing Paystack transaction: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to initialize Paystack payment: " + e.getMessage(), e);
+            throw PaymentException.initializationFailed("Paystack", e);
         }
     }
 
@@ -250,7 +251,7 @@ public class PaystackService {
 
         } catch (Exception e) {
             log.error("Error verifying Paystack transaction: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to verify Paystack payment: " + e.getMessage(), e);
+            throw PaymentException.verificationFailed(e);
         }
     }
 

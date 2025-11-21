@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pension_management_system.pension.exception.ReportException;
 import pension_management_system.pension.report.dto.ReportRequest;
 import pension_management_system.pension.report.dto.ReportResponse;
 import pension_management_system.pension.report.entity.Report;
@@ -148,7 +149,7 @@ public class ReportServiceImpl implements ReportService {
             // Ensure user hasn't exceeded their storage limit
             Long currentStorage = getTotalStorageByUser(request.getRequestedBy());
             if (currentStorage >= MAX_STORAGE_PER_USER) {
-                throw new RuntimeException("Storage quota exceeded. Please delete old reports.");
+                throw ReportException.quotaExceeded();
             }
 
             // STEP 3: MAP REQUEST TO ENTITY
@@ -186,15 +187,17 @@ public class ReportServiceImpl implements ReportService {
                 log.error("Failed to generate report file: {}", e.getMessage(), e);
                 report.markAsFailed("Report generation failed: " + e.getMessage());
                 reportRepository.save(report);
-                throw new RuntimeException("Report generation failed", e);
+                throw ReportException.generationFailed(e);
             }
 
             // STEP 9: CONVERT TO RESPONSE DTO
             return reportMapper.toResponse(report);
 
+        } catch (ReportException e) {
+            throw e;  // Re-throw already handled exceptions
         } catch (Exception e) {
             log.error("Error in generateReport: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to generate report: " + e.getMessage(), e);
+            throw ReportException.generationFailed(e);
         }
     }
 
@@ -900,11 +903,11 @@ public class ReportServiceImpl implements ReportService {
 
         // STEP 1: Find report
         Report report = reportRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Report not found with ID: " + id));
+            .orElseThrow(() -> pension_management_system.pension.exception.ResourceNotFoundException.report(id));
 
         // STEP 2: Check status
         if (!"COMPLETED".equals(report.getStatus())) {
-            throw new RuntimeException("Report is not ready for download. Status: " + report.getStatus());
+            throw ReportException.notReady(report.getStatus());
         }
 
         // STEP 3: Load file as Resource
@@ -916,12 +919,14 @@ public class ReportServiceImpl implements ReportService {
                 log.info("Report file found and readable: {}", filePath);
                 return resource;
             } else {
-                throw new RuntimeException("Report file not found or not readable: " + filePath);
+                throw ReportException.fileNotFound(filePath.toString());
             }
 
+        } catch (ReportException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error loading report file: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to load report file", e);
+            throw ReportException.loadFailed(e);
         }
     }
 
@@ -1065,7 +1070,7 @@ public class ReportServiceImpl implements ReportService {
 
         } catch (Exception e) {
             log.error("Failed to queue async report generation", e);
-            throw new RuntimeException("Failed to generate report: " + e.getMessage(), e);
+            throw ReportException.generationFailed(e);
         }
     }
 }

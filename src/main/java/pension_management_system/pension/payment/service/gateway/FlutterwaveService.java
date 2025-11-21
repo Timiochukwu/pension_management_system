@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import pension_management_system.pension.payment.dto.InitializePaymentRequest;
+import pension_management_system.pension.exception.PaymentException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -165,7 +166,7 @@ public class FlutterwaveService {
 
         } catch (Exception e) {
             log.error("Error initializing Flutterwave payment: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to initialize Flutterwave payment: " + e.getMessage(), e);
+            throw PaymentException.initializationFailed("Flutterwave", e);
         }
     }
 
@@ -235,7 +236,7 @@ public class FlutterwaveService {
 
         } catch (Exception e) {
             log.error("Error verifying Flutterwave transaction: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to verify Flutterwave payment: " + e.getMessage(), e);
+            throw PaymentException.verificationFailed(e);
         }
     }
 
@@ -269,7 +270,7 @@ public class FlutterwaveService {
 
         } catch (Exception e) {
             log.error("Error verifying by reference: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to verify by reference: " + e.getMessage(), e);
+            throw PaymentException.verificationFailed(e);
         }
     }
 

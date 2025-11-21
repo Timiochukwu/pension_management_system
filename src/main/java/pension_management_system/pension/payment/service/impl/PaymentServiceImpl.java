@@ -21,6 +21,8 @@ import pension_management_system.pension.payment.repository.PaymentRepository;
 import pension_management_system.pension.payment.service.PaymentService;
 import pension_management_system.pension.payment.service.gateway.FlutterwaveService;
 import pension_management_system.pension.payment.service.gateway.PaystackService;
+import pension_management_system.pension.exception.PaymentException;
+import pension_management_system.pension.exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -104,18 +106,16 @@ public class PaymentServiceImpl implements PaymentService {
         // STEP 1: Validate contribution exists
         Contribution contribution = contributionRepository
                 .findById(request.getContributionId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Contribution not found: " + request.getContributionId()
-                ));
+                .orElseThrow(() -> ResourceNotFoundException.contribution(request.getContributionId()));
 
         // STEP 2: Check contribution is not already paid
         if (contribution.getStatus() == ContributionStatus.COMPLETED) {
-            throw new RuntimeException("Contribution already paid");
+            throw PaymentException.alreadyPaid();
         }
 
         // STEP 3: Check amount matches
         if (!contribution.getContributionAmount().equals(request.getAmount())) {
-            throw new RuntimeException("Payment amount does not match contribution amount");
+            throw PaymentException.amountMismatch();
         }
 
         // STEP 4: Create payment record
@@ -140,7 +140,7 @@ public class PaymentServiceImpl implements PaymentService {
             } else if (request.getGateway() == PaymentGateway.FLUTTERWAVE) {
                 initializeFlutterwave(payment, request);
             } else {
-                throw new RuntimeException("Unsupported payment gateway: " + request.getGateway());
+                throw PaymentException.unsupportedGateway(request.getGateway().name());
             }
 
             // STEP 6: Update status to PENDING
@@ -288,7 +288,7 @@ public class PaymentServiceImpl implements PaymentService {
             log.error("Error verifying payment: {}", e.getMessage(), e);
             payment.markAsFailed("Verification error: " + e.getMessage(), null);
             payment = paymentRepository.save(payment);
-            throw new RuntimeException("Payment verification failed", e);
+            throw PaymentException.verificationFailed(e);
         }
 
         return paymentMapper.toResponse(payment);

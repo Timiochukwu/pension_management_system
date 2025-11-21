@@ -46,8 +46,16 @@ public class CorsConfig {
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
 
-        // Allow all headers (wildcard for development)
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Restrict allowed headers to necessary ones only
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+            "X-Auth-Token",
+            "Cache-Control"
+        ));
 
         // Expose headers to frontend
         configuration.setExposedHeaders(Arrays.asList(
