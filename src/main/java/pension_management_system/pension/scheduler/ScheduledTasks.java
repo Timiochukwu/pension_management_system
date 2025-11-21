@@ -148,8 +148,7 @@ public class ScheduledTasks {
 
         try {
             // Delete reports older than 90 days
-            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(90);
-            int deletedCount = reportService.deleteOldReports(cutoffDate);
+            int deletedCount = reportService.deleteOldReports(90);
 
             log.info("Completed report cleanup job. Deleted {} old reports", deletedCount);
         } catch (Exception e) {

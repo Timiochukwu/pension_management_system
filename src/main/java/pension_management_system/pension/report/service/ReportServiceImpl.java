@@ -961,13 +961,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
-     * DELETE OLD REPORTS
+     * DELETE OLD REPORTS (by days)
      *
-     * Cleanup job to delete reports older than cutoff date
+     * Cleanup job to delete reports older than specified days
      */
     @Override
-    public int deleteOldReports(LocalDateTime cutoffDate) {
-        log.info("Deleting reports older than: {}", cutoffDate);
+    public int deleteOldReports(int daysOld) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysOld);
+        log.info("Deleting reports older than {} days (cutoff: {})", daysOld, cutoffDate);
 
         // STEP 1: Find old reports
         List<Report> oldReports = reportRepository.findByGeneratedAtBetween(
@@ -992,15 +993,60 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
+     * GET REPORTS BY TYPE (List version)
+     */
+    @Override
+    public List<ReportResponse> getReportsByType(ReportType reportType) {
+        log.info("Fetching all reports of type: {}", reportType);
+        List<Report> reports = reportRepository.findByReportType(reportType, Pageable.unpaged()).getContent();
+        return reports.stream()
+            .map(reportMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * GET REPORTS FOR ENTITY
+     */
+    @Override
+    public List<ReportResponse> getReportsForEntity(String entityType, Long entityId) {
+        log.info("Fetching {} reports for entity ID: {}", entityType, entityId);
+        try {
+            ReportType type = ReportType.valueOf(entityType.toUpperCase());
+            return getReportsByTypeAndEntity(type, entityId);
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown entity type: {}", entityType);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * GET REPORTS BY DATE RANGE
+     */
+    @Override
+    public List<ReportResponse> getReportsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return getReportsInDateRange(startDate, endDate);
+    }
+
+    /**
+     * GET STORAGE USED BY USER
+     */
+    @Override
+    public long getStorageUsedByUser(String username) {
+        Long totalBytes = getTotalStorageByUser(username);
+        return totalBytes != null ? totalBytes : 0L;
+    }
+
+    /**
      * GET TOTAL STORAGE BY USER
      *
      * Calculate total file size for a user's reports
      */
     @Override
-    public Long getTotalStorageByUser(String requestedBy) {
+    public long getTotalStorageByUser(String requestedBy) {
         log.debug("Calculating total storage for user: {}", requestedBy);
 
         Long totalBytes = reportRepository.getTotalFileSizeByUser(requestedBy);
+        if (totalBytes == null) totalBytes = 0L;
 
         log.debug("User {} total storage: {} bytes ({} MB)",
             requestedBy, totalBytes, totalBytes / 1048576.0);

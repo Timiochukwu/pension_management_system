@@ -183,7 +183,6 @@ public class ContributionServiceImpl implements ContributionService {
                 .toList();
     }
 
-    @Override
     @Transactional
     public ContributionResponse updateContribution(Long id, ContributionRequest request) {
         log.info("Updating contribution with id: {}", id);
@@ -237,7 +236,6 @@ public class ContributionServiceImpl implements ContributionService {
         return contributionMapper.toResponse(updatedContribution);
     }
 
-    @Override
     @Transactional
     public void deleteContribution(Long id) {
         log.info("Deleting contribution with id: {}", id);

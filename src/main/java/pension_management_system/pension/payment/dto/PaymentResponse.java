@@ -29,4 +29,11 @@ public class PaymentResponse {
     private String failureReason;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
+
+    /**
+     * Check if payment is completed
+     */
+    public boolean isCompleted() {
+        return status == PaymentStatus.COMPLETED;
+    }
 }

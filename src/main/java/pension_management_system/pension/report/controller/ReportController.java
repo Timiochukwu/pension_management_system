@@ -637,14 +637,14 @@ public class ReportController {
      * - Add authentication/authorization check
      */
     @DeleteMapping("/cleanup")
-    @Operation(summary = "Delete old reports", description = "Delete reports older than specified date")
+    @Operation(summary = "Delete old reports", description = "Delete reports older than specified number of days")
     public ResponseEntity<ApiResponseDto<Integer>> deleteOldReports(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cutoffDate) {
+            @RequestParam(defaultValue = "90") int daysOld) {
 
-        log.info("DELETE /api/v1/reports/cleanup - cutoffDate: {}", cutoffDate);
+        log.info("DELETE /api/v1/reports/cleanup - daysOld: {}", daysOld);
 
         try {
-            int deletedCount = reportService.deleteOldReports(cutoffDate);
+            int deletedCount = reportService.deleteOldReports(daysOld);
 
             ApiResponseDto<Integer> apiResponse = ApiResponseDto.<Integer>builder()
                     .success(true)

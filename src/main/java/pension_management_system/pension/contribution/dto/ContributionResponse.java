@@ -26,7 +26,7 @@ public class ContributionResponse {
     private ContributionType contributionType;
     private BigDecimal contributionAmount;
     private LocalDate contributionDate;
-    private PaymentMethod paymentMethod;
+    private String paymentMethod;
     private String description;
     private ContributionStatus status;
     private LocalDateTime processedAt;

@@ -215,6 +215,39 @@ public class JwtUtil {
     }
 
     /**
+     * VALIDATE TOKEN (Overload)
+     *
+     * Check if token is valid without user details
+     *
+     * Validation checks:
+     * 1. Token can be parsed
+     * 2. Token not expired
+     *
+     * @param token JWT token
+     * @return true if token valid, false otherwise
+     */
+    public Boolean validateToken(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            log.error("Token validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * GET USERNAME FROM TOKEN
+     *
+     * Alias for extractUsername for compatibility
+     *
+     * @param token JWT token
+     * @return Username from token
+     */
+    public String getUsernameFromToken(String token) {
+        return extractUsername(token);
+    }
+
+    /**
      * GENERATE TOKEN
      *
      * Create JWT for authenticated user

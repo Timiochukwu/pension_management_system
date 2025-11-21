@@ -27,7 +27,13 @@
         @Mapping(source = "member.id", target = "memberId")
         @Mapping(source = "member", target = "memberName", qualifiedByName ="getFullName")
         @Mapping(source = "member.memberId", target = "memberBusinessId")
+        @Mapping(source = "paymentMethod", target = "paymentMethod", qualifiedByName = "paymentMethodToString")
         ContributionResponse toResponse(Contribution contribution);
+
+        @Named("paymentMethodToString")
+        default String paymentMethodToString(pension_management_system.pension.contribution.entity.PaymentMethod paymentMethod) {
+            return paymentMethod != null ? paymentMethod.name() : null;
+        }
 
 
         // --------------------- Helper Methods ---------------------

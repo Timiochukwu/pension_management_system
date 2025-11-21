@@ -123,6 +123,13 @@ public class Benefit {
         this.approvalDate = LocalDate.now();
     }
 
+    public void approve(BigDecimal amount, String approvedBy) {
+        this.status = BenefitStatus.APPROVED;
+        this.netPayable = amount;
+        this.approvedBy = approvedBy;
+        this.approvalDate = LocalDate.now();
+    }
+
     public void disburse(String disbursedBy) {
         this.status = BenefitStatus.DISBURSED;
         this.disbursedBy = disbursedBy;
@@ -134,7 +141,22 @@ public class Benefit {
         this.rejectionReason = reason;
     }
 
+    public void reject(String reason, String rejectedBy) {
+        this.status = BenefitStatus.REJECTED;
+        this.rejectionReason = reason;
+        this.remarks = "Rejected by: " + rejectedBy;
+    }
+
     public void cancel() {
         this.status = BenefitStatus.CANCELLED;
+    }
+
+    public void markAsPaid() {
+        this.status = BenefitStatus.DISBURSED;
+        this.disbursementDate = LocalDate.now();
+    }
+
+    public void startReview() {
+        this.status = BenefitStatus.UNDER_REVIEW;
     }
 }

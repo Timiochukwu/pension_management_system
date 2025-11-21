@@ -275,6 +275,38 @@ public class EmailService {
             log.error("Failed to send monthly reminder: {}", e.getMessage(), e);
         }
     }
+
+    /**
+     * SEND EMAIL (Generic method used by jobs)
+     *
+     * @param emailDto Email DTO containing to, subject, template, and data
+     */
+    @Async
+    public void sendEmail(pension_management_system.pension.notification.dto.EmailDto emailDto) {
+        log.info("Sending email to: {}", emailDto.getTo());
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(emailDto.getTo());
+            message.setSubject(emailDto.getSubject());
+
+            // Build email body from template data
+            StringBuilder body = new StringBuilder();
+            if (emailDto.getTemplateData() != null) {
+                emailDto.getTemplateData().forEach((key, value) ->
+                    body.append(key).append(": ").append(value).append("\n")
+                );
+            }
+            message.setText(body.toString());
+
+            mailSender.send(message);
+            log.info("Email sent successfully to: {}", emailDto.getTo());
+
+        } catch (Exception e) {
+            log.error("Failed to send email: {}", e.getMessage(), e);
+        }
+    }
 }
 
 /**

@@ -14,4 +14,7 @@ public interface EmployerRepository extends JpaRepository<Employer,Long> {
     boolean existsByRegistrationNumber(String registrationNumber);
     boolean existsByCompanyName(String companyName);
     List<Employer> findByActiveTrue();
+
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM Employer e LEFT JOIN e.members m GROUP BY e ORDER BY COUNT(m) DESC")
+    List<Employer> findTopEmployersByMemberCount();
 }

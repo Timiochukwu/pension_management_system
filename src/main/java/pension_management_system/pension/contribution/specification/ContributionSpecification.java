@@ -99,4 +99,84 @@ public class ContributionSpecification {
             return criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), endDate);
         };
     }
+
+    /**
+     * Filter contributions with multiple criteria
+     */
+    public static Specification<Contribution> filterContributions(
+            String referenceNumber,
+            Long memberId,
+            ContributionType contributionType,
+            ContributionStatus status,
+            pension_management_system.pension.contribution.entity.PaymentMethod paymentMethod,
+            BigDecimal amountFrom,
+            BigDecimal amountTo,
+            java.time.LocalDate contributionDateFrom,
+            java.time.LocalDate contributionDateTo
+    ) {
+        return (root, query, criteriaBuilder) -> {
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+
+            if (referenceNumber != null && !referenceNumber.isEmpty()) {
+                predicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("referenceNumber")),
+                        "%" + referenceNumber.toLowerCase() + "%"
+                ));
+            }
+
+            if (memberId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("member").get("id"), memberId));
+            }
+
+            if (contributionType != null) {
+                predicates.add(criteriaBuilder.equal(root.get("contributionType"), contributionType));
+            }
+
+            if (status != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (paymentMethod != null) {
+                predicates.add(criteriaBuilder.equal(root.get("paymentMethod"), paymentMethod));
+            }
+
+            if (amountFrom != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("contributionAmount"), amountFrom));
+            }
+
+            if (amountTo != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("contributionAmount"), amountTo));
+            }
+
+            if (contributionDateFrom != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("contributionDate"), contributionDateFrom));
+            }
+
+            if (contributionDateTo != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("contributionDate"), contributionDateTo));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
+
+    /**
+     * Search contributions by keyword across multiple fields
+     */
+    public static Specification<Contribution> searchContributions(String searchTerm) {
+        return (root, query, criteriaBuilder) -> {
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+
+            String pattern = "%" + searchTerm.toLowerCase() + "%";
+
+            return criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("referenceNumber")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("firstName")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("lastName")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("email")), pattern)
+            );
+        };
+    }
 }

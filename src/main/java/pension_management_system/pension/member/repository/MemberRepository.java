@@ -47,6 +47,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Count active members
     long countByActiveTrue();
 
+    // Count inactive members
+    long countByActiveFalse();
+
+    // Count members by status
+    long countByMemberStatus(MemberStatus memberStatus);
+
     // Count members by status and active flag
     long countByMemberStatusAndActiveTrue(MemberStatus memberStatus);
 

@@ -17,8 +17,15 @@ import java.math.BigDecimal;
 public class DashboardStatisticsResponse {
     private long totalMembers;
     private long activeMembers;
+    private long inactiveMembers;
     private long totalContributions;
     private BigDecimal totalContributionAmount;
+    private long totalPayments;
+    private BigDecimal monthlyContributionAmount;
+    private BigDecimal voluntaryContributionAmount;
+    private long pendingContributions;
+    private long completedContributions;
+    private long failedContributions;
     private long pendingBenefits;
     private long approvedBenefits;
     private BigDecimal totalBenefitsPaid;

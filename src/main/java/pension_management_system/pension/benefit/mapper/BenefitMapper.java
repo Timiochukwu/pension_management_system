@@ -32,4 +32,27 @@ public interface BenefitMapper {
     @Mapping(source = "member.memberId", target = "memberIdNumber")
     @Mapping(target = "memberName", expression = "java(benefit.getMember().getFirstName() + \" \" + benefit.getMember().getLastName())")
     BenefitResponse toResponse(Benefit benefit);
+
+    /**
+     * Update existing entity from request DTO
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "member", ignore = true)
+    @Mapping(target = "referenceNumber", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "totalContributions", ignore = true)
+    @Mapping(target = "employerContributions", ignore = true)
+    @Mapping(target = "investmentReturns", ignore = true)
+    @Mapping(target = "calculatedBenefit", ignore = true)
+    @Mapping(target = "taxDeductions", ignore = true)
+    @Mapping(target = "administrativeFees", ignore = true)
+    @Mapping(target = "netPayable", ignore = true)
+    @Mapping(target = "approvalDate", ignore = true)
+    @Mapping(target = "disbursementDate", ignore = true)
+    @Mapping(target = "approvedBy", ignore = true)
+    @Mapping(target = "disbursedBy", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromRequest(BenefitRequest request, @MappingTarget Benefit benefit);
 }

@@ -69,4 +69,24 @@ public interface ReportService {
      * Get storage used by user
      */
     long getStorageUsedByUser(String username);
+
+    /**
+     * Get reports by type with pagination
+     */
+    Page<ReportResponse> getReportsByType(ReportType reportType, Pageable pageable);
+
+    /**
+     * Get reports by type and entity ID
+     */
+    List<ReportResponse> getReportsByTypeAndEntity(ReportType reportType, Long entityId);
+
+    /**
+     * Get reports within a date range
+     */
+    List<ReportResponse> getReportsInDateRange(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Get total storage used by user
+     */
+    long getTotalStorageByUser(String username);
 }
