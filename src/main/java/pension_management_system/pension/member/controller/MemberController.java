@@ -7,11 +7,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +14,8 @@ import org.springframework.web.client.RestClient;
 import pension_management_system.pension.common.dto.ApiResponseDto;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
-import pension_management_system.pension.member.entity.MemberStatus;
 import pension_management_system.pension.member.service.MemberService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.stream.DoubleStream.builder;
@@ -206,69 +199,6 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @GetMapping("/search")
-    @Operation(summary = "Search and filter members", description = "Advanced search with multiple filter criteria and pagination")
-    public ResponseEntity<ApiResponseDto<Page<MemberResponse>>> searchMembers(
-            @RequestParam(required = false) String memberId,
-            @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phoneNumber,
-            @RequestParam(required = false) MemberStatus status,
-            @RequestParam(required = false) Boolean active,
-            @RequestParam(required = false) Long employerId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirthFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirthTo,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String state,
-            @RequestParam(required = false) String country,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
-    ) {
-        log.info("Searching members with filters - page: {}, size: {}", page, size);
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        Page<MemberResponse> members = memberService.searchMembers(
-                memberId, firstName, lastName, email, phoneNumber, status, active,
-                employerId, dateOfBirthFrom, dateOfBirthTo, city, state, country, pageable
-        );
-
-        ApiResponseDto<Page<MemberResponse>> apiResponseDto = ApiResponseDto.<Page<MemberResponse>>builder()
-                .success(true)
-                .message("Members search completed successfully")
-                .data(members)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
-    }
-
-    @GetMapping("/quick-search")
-    @Operation(summary = "Quick search members", description = "Search members by keyword across multiple fields")
-    public ResponseEntity<ApiResponseDto<Page<MemberResponse>>> quickSearch(
-            @RequestParam String searchTerm,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
-    ) {
-        log.info("Quick search for members with term: {}", searchTerm);
-
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        Page<MemberResponse> members = memberService.quickSearch(searchTerm, pageable);
-
-        ApiResponseDto<Page<MemberResponse>> apiResponseDto = ApiResponseDto.<Page<MemberResponse>>builder()
-                .success(true)
-                .message("Quick search completed successfully")
-                .data(members)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
-    }
 
 }

@@ -1,13 +1,9 @@
 package pension_management_system.pension.member.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import pension_management_system.pension.common.exception.MemberNotFoundException;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
-import pension_management_system.pension.member.entity.MemberStatus;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -102,50 +98,5 @@ public interface MemberService {
      * @throws MemberNotFoundException if member doesn't exist
      */
     void reactivateMember(Long id);
-
-    /**
-     * Search and filter members with pagination
-     *
-     * @param memberId Filter by member ID
-     * @param firstName Filter by first name
-     * @param lastName Filter by last name
-     * @param email Filter by email
-     * @param phoneNumber Filter by phone number
-     * @param status Filter by member status
-     * @param active Filter by active status
-     * @param employerId Filter by employer ID
-     * @param dateOfBirthFrom Filter by date of birth from
-     * @param dateOfBirthTo Filter by date of birth to
-     * @param city Filter by city
-     * @param state Filter by state
-     * @param country Filter by country
-     * @param pageable Pagination parameters
-     * @return Page of members matching the criteria
-     */
-    Page<MemberResponse> searchMembers(
-            String memberId,
-            String firstName,
-            String lastName,
-            String email,
-            String phoneNumber,
-            MemberStatus status,
-            Boolean active,
-            Long employerId,
-            LocalDate dateOfBirthFrom,
-            LocalDate dateOfBirthTo,
-            String city,
-            String state,
-            String country,
-            Pageable pageable
-    );
-
-    /**
-     * Quick search members by keyword
-     *
-     * @param searchTerm Search term to match against multiple fields
-     * @param pageable Pagination parameters
-     * @return Page of members matching the search term
-     */
-    Page<MemberResponse> quickSearch(String searchTerm, Pageable pageable);
 
 }
