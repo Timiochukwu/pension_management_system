@@ -34,6 +34,6 @@ public class PaymentResponse {
      * Check if payment is completed
      */
     public boolean isCompleted() {
-        return status == PaymentStatus.COMPLETED;
+        return status == PaymentStatus.SUCCESS;
     }
 }

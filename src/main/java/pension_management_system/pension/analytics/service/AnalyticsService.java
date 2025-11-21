@@ -9,4 +9,5 @@ public interface AnalyticsService {
     ContributionByPaymentMethod getContributionByPaymentMethod();
     TopEmployersResponse getTopEmployers(int limit);
     RecentActivityResponse getRecentActivity(int limit);
+    SystemStatisticsDto getSystemStatistics();
 }

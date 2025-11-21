@@ -131,11 +131,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                             .status(status.name())
                             .count(count)
                             .percentage(BigDecimal.valueOf(percentage)
-                                    .setScale(2, RoundingMode.HALF_UP)
-                                    .doubleValue())
+                                    .setScale(2, RoundingMode.HALF_UP))
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return MemberStatusDistribution.builder()
                 .distribution(distribution)
@@ -167,11 +166,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                             .count(count)
                             .totalAmount(totalAmount)
                             .percentage(BigDecimal.valueOf(percentage)
-                                    .setScale(2, RoundingMode.HALF_UP)
-                                    .doubleValue())
+                                    .setScale(2, RoundingMode.HALF_UP))
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return ContributionByPaymentMethod.builder()
                 .paymentMethods(paymentMethods)
@@ -253,6 +251,36 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         return RecentActivityResponse.builder()
                 .recentActivities(activities)
+                .build();
+    }
+
+    @Override
+    @Cacheable(value = "systemStatistics", unless = "#result == null")
+    public SystemStatisticsDto getSystemStatistics() {
+        log.info("Generating system statistics");
+
+        Long totalMembers = memberRepository.count();
+        Long activeMembers = memberRepository.countByActiveTrue();
+        Long retiredMembers = memberRepository.countByMemberStatus(MemberStatus.RETIRED);
+        Long totalEmployers = employerRepository.count();
+        Long totalContributions = contributionRepository.count();
+
+        BigDecimal totalContributionAmount = contributionRepository.getTotalContributionAmount();
+        if (totalContributionAmount == null) totalContributionAmount = BigDecimal.ZERO;
+
+        return SystemStatisticsDto.builder()
+                .totalMembers(totalMembers)
+                .activeMembers(activeMembers)
+                .retiredMembers(retiredMembers)
+                .totalContributions(totalContributions)
+                .totalContributionAmount(totalContributionAmount)
+                .totalBenefits(0L)
+                .pendingBenefits(0L)
+                .approvedBenefits(0L)
+                .disbursedBenefits(0L)
+                .totalBenefitsAmount(BigDecimal.ZERO)
+                .totalEmployers(totalEmployers)
+                .activeEmployers(employerRepository.countByActiveTrue())
                 .build();
     }
 }

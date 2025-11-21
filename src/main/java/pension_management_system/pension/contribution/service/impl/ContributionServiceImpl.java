@@ -226,7 +226,7 @@ public class ContributionServiceImpl implements ContributionService {
         contribution.setMember(member);
         contribution.setContributionType(request.getContributionType());
         contribution.setContributionAmount(request.getContributionAmount());
-        contribution.setContributionDate(request.getContributionDate());
+        contribution.setContributionDate(request.getContributionDate().atStartOfDay());
         contribution.setPaymentMethod(request.getPaymentMethod());
         contribution.setDescription(request.getDescription());
 
