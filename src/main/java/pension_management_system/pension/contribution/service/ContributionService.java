@@ -1,5 +1,7 @@
 package pension_management_system.pension.contribution.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pension_management_system.pension.contribution.dto.ContributionRequest;
 import pension_management_system.pension.contribution.dto.ContributionResponse;
 import pension_management_system.pension.contribution.dto.ContributionStatementResponse;
@@ -18,4 +20,5 @@ public interface ContributionService {
     BigDecimal calculateTotalByType(Long memberId, ContributionType type);
     ContributionStatementResponse generateStatement(Long  memberId, LocalDate startDate, LocalDate endDate);
     List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
+    Page<ContributionResponse> quickSearch(String keyword, Pageable pageable);
 }

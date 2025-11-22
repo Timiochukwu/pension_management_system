@@ -2,6 +2,9 @@ package pension_management_system.pension.contribution.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.common.exception.DuplicateMonthlyContributionException;
@@ -166,5 +169,38 @@ public class ContributionServiceImpl implements ContributionService {
     @Override
     public List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate) {
         return List.of();
+    }
+
+    @Override
+    public Page<ContributionResponse> quickSearch(String keyword, Pageable pageable) {
+        log.info("Quick search for keyword: {}", keyword);
+        // Simple implementation - search all contributions and filter by keyword
+        List<Contribution> allContributions = contributionRepository.findAll();
+
+        List<ContributionResponse> filtered = allContributions.stream()
+                .filter(c -> matchesKeyword(c, keyword))
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .map(contributionMapper::toResponse)
+                .collect(Collectors.toList());
+
+        long total = allContributions.stream()
+                .filter(c -> matchesKeyword(c, keyword))
+                .count();
+
+        return new PageImpl<>(filtered, pageable, total);
+    }
+
+    private boolean matchesKeyword(Contribution contribution, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return true;
+        }
+        String lowerKeyword = keyword.toLowerCase();
+        return (contribution.getReferenceNumber() != null &&
+                contribution.getReferenceNumber().toLowerCase().contains(lowerKeyword)) ||
+               (contribution.getMember() != null && contribution.getMember().getMemberId() != null &&
+                contribution.getMember().getMemberId().toLowerCase().contains(lowerKeyword)) ||
+               (contribution.getMember() != null && contribution.getMember().getFullName() != null &&
+                contribution.getMember().getFullName().toLowerCase().contains(lowerKeyword));
     }
 }
