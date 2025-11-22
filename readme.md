@@ -1,129 +1,299 @@
-# Pension Management System - Quick Start Guide
+# Pension Management System
 
-## 🚀 Getting Started (Day 1 - Morning)
+A comprehensive Spring Boot application for managing pension funds, member contributions, benefits, and employer relationships.
 
-### Step 1: Update Your Project Structure
+## 📋 Table of Contents
 
-Copy all the artifacts I've created into your project:
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [Contributing](#contributing)
+
+## ✨ Features
+
+### Core Modules
+
+#### 1. Member Management
+- Complete member registration and profile management
+- Status tracking (ACTIVE, INACTIVE, SUSPENDED, RETIRED, TERMINATED)
+- Age and eligibility validation
+- Soft delete functionality
+- Member analytics and reporting
+
+#### 2. Contribution Processing
+- Monthly and voluntary contribution types
+- Duplicate monthly contribution prevention
+- Contribution validation (minimum amounts, active member status)
+- Contribution history and statements
+- Payment method tracking
+- Total contribution calculations
+
+#### 3. Benefit Calculation & Processing
+- Multiple benefit types:
+  - Retirement benefits (age 60+, 5 years service)
+  - Voluntary withdrawals
+  - Death benefits
+  - Disability benefits
+  - Partial withdrawals (25% limit)
+- Automatic benefit calculations including:
+  - Employer contributions (10%)
+  - Investment returns (8% annual)
+  - Tax deductions (10%)
+  - Administrative fees (2%)
+- Complete workflow: Application → Review → Approval → Disbursement
+- Automatic member status updates
+
+#### 4. Employer Management
+- Employer registration and management
+- Employee roster tracking
+- Company verification
+
+#### 5. Authentication & Authorization
+- JWT-based authentication
+- Role-based access control (RBAC)
+- Roles: ADMIN, MANAGER, MEMBER, OPERATOR
+- Password encryption with BCrypt
+- Stateless session management
+
+#### 6. Reporting & Analytics
+- System-wide statistics dashboard
+- Member-specific analytics
+- Export reports in multiple formats:
+  - CSV (Comma-Separated Values)
+  - Excel (XLSX)
+  - PDF (Portable Document Format)
+- Contribution summaries
+- Benefit calculations
+
+#### 7. Background Jobs (Quartz Scheduler)
+- Monthly contribution reminders
+- Retirement eligibility notifications
+- Pending benefit alerts
+- Monthly system reports
+
+#### 8. Email Notifications
+- Member registration confirmations
+- Contribution receipts
+- Benefit application updates
+- Approval notifications
+- Async email processing
+
+## 🛠 Tech Stack
+
+### Backend
+- **Java 22** with preview features
+- **Spring Boot 3.5.6**
+- **Spring Security** - Authentication & Authorization
+- **Spring Data JPA** - Data persistence
+- **Hibernate** - ORM
+- **MapStruct 1.6.2** - DTO mapping
+- **Quartz Scheduler** - Background jobs
+
+### Database
+- **MySQL 8.0+** (Primary)
+- **PostgreSQL** support available
+
+### Security
+- **JWT (jjwt 0.11.5)** - Token-based authentication
+- **BCrypt** - Password encryption
+
+### Documentation
+- **SpringDoc OpenAPI 3.0** - API documentation
+- **Swagger UI** - Interactive API testing
+
+### Build & Testing
+- **Maven 3** - Build automation
+- **JUnit 5** - Unit testing
+- **Mockito** - Mocking framework
+- **Spring Boot Test** - Integration testing
+
+### File Processing
+- **Apache POI** - Excel generation
+- **iText PDF** - PDF generation
+- **OpenCSV** - CSV export
+
+### DevOps
+- **Docker** - Containerization
+- **Docker Compose** - Multi-container orchestration
+- **GitHub Actions** - CI/CD pipeline
+
+## 🏗 Architecture
+
+The application follows **Clean Architecture** principles with clear separation of concerns:
 
 ```
 src/main/java/pension_management_system/pension/
-│
-├── member/
-│   ├── entity/
-│   │   ├── Member.java ✅ (UPDATE with new version)
-│   │   └── MemberStatus.java ✅ (NEW)
-│   ├── service/
-│   │   ├── MemberService.java ✅ (NEW)
-│   │   └── MemberServiceImpl.java ✅ (NEW)
-│   ├── controller/
-│   │   └── MemberController.java ✅ (NEW)
-│   └── dto/
-│       └── MemberResponse.java ✅ (UPDATE)
-│
-├── contribution/
-│   ├── entity/
-│   │   └── Contribution.java ✅ (NEW - includes enums)
-│   ├── repository/
-│   │   └── ContributionRepository.java ✅ (NEW)
-│   ├── service/
-│   │   ├── ContributionService.java ✅ (NEW)
-│   │   └── ContributionServiceImpl.java ✅ (NEW)
-│   ├── controller/
-│   │   └── ContributionController.java ✅ (NEW)
-│   ├── dto/
-│   │   ├── ContributionRequest.java ✅ (NEW)
-│   │   ├── ContributionResponse.java ✅ (NEW)
-│   │   └── ContributionStatementResponse.java ✅ (NEW)
-│   └── mapper/
-│       └── ContributionMapper.java ✅ (NEW)
-│
-├── employer/
-│   └── entity/
-│       └── Employer.java ✅ (NEW)
-│
-├── benefit/
-│   └── entity/
-│       └── Benefit.java ✅ (NEW - includes enums)
-│
-└── common/
-    ├── dto/
-    │   ├── ApiResponse.java ✅ (UPDATE)
-    │   └── ErrorResponse.java ✅ (NEW)
-    └── exception/
-        ├── GlobalExceptionHandler.java ✅ (NEW)
-        ├── MemberNotFoundException.java ✅ (NEW)
-        ├── DuplicateMonthlyContributionException.java ✅ (NEW)
-        └── InvalidContributionException.java ✅ (NEW)
+├── auth/               # Authentication & user management
+├── member/             # Member management
+├── contribution/       # Contribution processing
+├── benefit/            # Benefit calculation & processing
+├── employer/           # Employer management
+├── analytics/          # Analytics & statistics
+├── report/             # Report generation & export
+├── notification/       # Email notification service
+├── jobs/               # Background scheduled jobs
+└── common/             # Shared utilities & exceptions
 ```
 
-### Step 2: Update MemberRepository
+### Layer Structure
+- **Controller** - REST API endpoints
+- **Service** - Business logic
+- **Repository** - Data access
+- **Entity** - JPA entities
+- **DTO** - Data Transfer Objects
+- **Mapper** - Entity-DTO mapping
 
-```java
-package pension_management_system.pension.member.repository;
+## 🚀 Getting Started
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-import pension_management_system.pension.member.entity.Member;
-import pension_management_system.pension.member.entity.MemberStatus;
+### Prerequisites
+- JDK 22 or higher
+- Maven 3.6+
+- MySQL 8.0+ or PostgreSQL
+- Docker & Docker Compose (for containerized deployment)
 
-import java.util.List;
-import java.util.Optional;
+### Local Development Setup
 
-@Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findByMemberId(String memberId);
-    Optional<Member> findByEmail(String email);
-    boolean existsByEmail(String email);
-    boolean existsByPhoneNumber(String phoneNumber);
-    List<Member> findByStatus(MemberStatus status);
-    List<Member> findByActiveTrue();
-
-    @Query("SELECT m FROM Member m WHERE YEAR(CURRENT_DATE) - YEAR(m.dateOfBirth) >= 60")
-    List<Member> findMembersEligibleForRetirement();
-}
-```
-
-### Step 3: Compile Project
-
+#### 1. Clone the repository
 ```bash
-# Clean and compile to generate MapStruct implementations
-./mvnw clean compile
-
-# Check for any compilation errors
-# MapStruct will generate MemberMapperImpl and ContributionMapperImpl
+git clone https://github.com/Timiochukwu/pension_management_system.git
+cd pension_management_system
 ```
 
-### Step 4: Run Application
+#### 2. Configure Database
+Create a MySQL database:
+```sql
+CREATE DATABASE java_pension_management_system;
+```
 
+Update `.env` file or set environment variables:
 ```bash
-# Start the application
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=java_pension_management_system
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+#### 3. Build the application
+```bash
+./mvnw clean install
+```
+
+#### 4. Run the application
+```bash
 ./mvnw spring-boot:run
-
-# Application should start on http://localhost:8080
 ```
 
----
-
-## 📝 Testing Your APIs (Day 1 - Afternoon)
-
-### Open Swagger UI
-Visit: http://localhost:8080/swagger-ui.html
-
-### Test Sequence (Use Postman or Swagger UI)
-
-#### 1. Register a Member
+Or with specific profile:
 ```bash
-POST http://localhost:8080/api/v1/members
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+#### 5. Access the application
+- **Application**: http://localhost:1110
+- **Swagger UI**: http://localhost:1110/swagger-ui.html
+- **API Docs**: http://localhost:1110/v3/api-docs
+
+### Docker Deployment
+
+#### Using Docker Compose (Recommended)
+```bash
+# Start all services (app + database + adminer)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+```
+
+#### Manual Docker Build
+```bash
+# Build image
+docker build -t pension-management-system .
+
+# Run container
+docker run -p 1110:1110 \
+  -e DB_HOST=host.docker.internal \
+  -e DB_NAME=java_pension_management_system \
+  -e DB_USERNAME=root \
+  -e DB_PASSWORD=your_password \
+  pension-management-system
+```
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+
+#### Register User
+```http
+POST /api/v1/auth/register
 Content-Type: application/json
 
 {
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "password123",
   "firstName": "John",
   "lastName": "Doe",
-  "email": "john.doe@example.com",
+  "role": "MEMBER"
+}
+```
+
+#### Login
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "password": "password123"
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "type": "Bearer",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "role": "MEMBER",
+    "expiresIn": 86400000
+  }
+}
+```
+
+### Member Endpoints
+
+All member endpoints require authentication. Include JWT token in header:
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+#### Register Member
+```http
+POST /api/v1/members
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@example.com",
   "phoneNumber": "+2348012345678",
-  "dateOfBirth": "1990-05-15",
+  "dateOfBirth": "1985-03-15",
   "address": "123 Main Street",
   "city": "Lagos",
   "state": "Lagos",
@@ -131,461 +301,201 @@ Content-Type: application/json
 }
 ```
 
-**Expected Response: 201 Created**
-```json
-{
-  "success": true,
-  "message": "Member registered successfully",
-  "data": {
-    "id": 1,
-    "memberId": "MEM1699564800000",
-    "firstName": "John",
-    "lastName": "Doe",
-    "fullName": "John Doe",
-    "email": "john.doe@example.com",
-    "phoneNumber": "+2348012345678",
-    "dateOfBirth": "1990-05-15",
-    "age": 33,
-    "status": "ACTIVE",
-    "active": true,
-    ...
-  }
-}
-```
+### Contribution Endpoints
 
-#### 2. Get Member by ID
-```bash
-GET http://localhost:8080/api/v1/members/1
-```
-
-#### 3. Create Monthly Contribution
-```bash
-POST http://localhost:8080/api/v1/contributions
-Content-Type: application/json
+#### Process Contribution
+```http
+POST /api/v1/contributions
+Authorization: Bearer <token>
 
 {
   "memberId": 1,
   "contributionType": "MONTHLY",
-  "amount": 50000.00,
-  "contributionDate": "2023-11-15",
+  "contributionAmount": 5000.00,
+  "contributionDate": "2024-11-15",
   "paymentMethod": "BANK_TRANSFER",
-  "description": "Monthly contribution for November 2023"
+  "description": "November 2024 contribution"
 }
 ```
 
-**Expected Response: 201 Created**
-```json
-{
-  "success": true,
-  "message": "Contribution processed successfully",
-  "data": {
-    "id": 1,
-    "referenceNumber": "CON20231115001234567890",
-    "memberName": "John Doe",
-    "contributionType": "MONTHLY",
-    "amount": 50000.00,
-    "status": "COMPLETED",
-    ...
-  }
-}
+#### Get Member Contributions
+```http
+GET /api/v1/contributions/member/1
+Authorization: Bearer <token>
 ```
 
-#### 4. Try Duplicate Monthly Contribution (Should Fail)
-```bash
-POST http://localhost:8080/api/v1/contributions
-Content-Type: application/json
-
-{
-  "memberId": 1,
-  "contributionType": "MONTHLY",
-  "amount": 50000.00,
-  "contributionDate": "2023-11-20",
-  "paymentMethod": "BANK_TRANSFER"
-}
+#### Generate Contribution Statement
+```http
+GET /api/v1/contributions/member/1/statement?startDate=2024-01-01&endDate=2024-12-31
+Authorization: Bearer <token>
 ```
 
-**Expected Response: 409 Conflict**
-```json
-{
-  "success": false,
-  "message": "Member MEM1699564800000 already has a monthly contribution for 2023-11...",
-  "timestamp": "2023-11-15T10:30:00"
-}
+### Benefit Endpoints
+
+#### Calculate Benefit
+```http
+GET /api/v1/benefits/calculate/1?benefitType=RETIREMENT
+Authorization: Bearer <token>
 ```
 
-#### 5. Create Voluntary Contribution (Should Work)
-```bash
-POST http://localhost:8080/api/v1/contributions
-Content-Type: application/json
+#### Apply for Benefit
+```http
+POST /api/v1/benefits
+Authorization: Bearer <token>
 
 {
   "memberId": 1,
-  "contributionType": "VOLUNTARY",
-  "amount": 100000.00,
-  "contributionDate": "2023-11-20",
-  "paymentMethod": "BANK_TRANSFER"
+  "benefitType": "RETIREMENT",
+  "paymentMethod": "BANK_TRANSFER",
+  "accountNumber": "1234567890",
+  "bankName": "First Bank",
+  "remarks": "Retirement application"
 }
 ```
 
-#### 6. Get All Member Contributions
-```bash
-GET http://localhost:8080/api/v1/contributions/member/1
+#### Approve Benefit (ADMIN/MANAGER only)
+```http
+PUT /api/v1/benefits/1/approve?approvedBy=admin
+Authorization: Bearer <token>
 ```
 
-#### 7. Calculate Total Contributions
-```bash
-GET http://localhost:8080/api/v1/contributions/member/1/total
+### Report Export Endpoints
+
+#### Export Members Report
+```http
+GET /api/v1/reports/members/export?format=EXCEL
+Authorization: Bearer <token>
 ```
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "message": "Total contributions calculated",
-  "data": 150000.00
-}
+Supported formats: `CSV`, `EXCEL`, `PDF`
+
+#### Export System Statistics
+```http
+GET /api/v1/reports/statistics/export?format=PDF
+Authorization: Bearer <token>
 ```
 
-#### 8. Generate Contribution Statement
-```bash
-GET http://localhost:8080/api/v1/contributions/member/1/statement?startDate=2023-01-01&endDate=2023-12-31
-```
+## 🔐 Security & Roles
 
----
+### Role Permissions
 
-## 🔨 What to Build Next (Day 2-3)
+| Endpoint Pattern | ADMIN | MANAGER | MEMBER | OPERATOR |
+|-----------------|-------|---------|--------|----------|
+| `/auth/**` | ✅ | ✅ | ✅ | ✅ |
+| `/members/**` | ✅ | ✅ | ✅ own data | ❌ |
+| `/contributions/**` | ✅ | ✅ | ✅ own data | ✅ |
+| `/employers/**` | ✅ | ✅ | ❌ | ❌ |
+| `/benefits/calculate/**` | ✅ | ✅ | ✅ own data | ❌ |
+| `/benefits/*/approve` | ✅ | ✅ | ❌ | ❌ |
+| `/benefits/**` | ✅ | ✅ | ✅ own data | ✅ |
+| `/analytics/**` | ✅ | ✅ | ❌ | ❌ |
+| `/reports/**` | ✅ | ✅ | ❌ | ❌ |
 
-### Priority 1: Complete Employer Module
+## 🧪 Testing
 
-#### 1. Create EmployerRepository
-```java
-package pension_management_system.pension.employer.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import pension_management_system.pension.employer.entity.Employer;
-import java.util.Optional;
-import java.util.List;
-
-public interface EmployerRepository extends JpaRepository<Employer, Long> {
-    Optional<Employer> findByEmployerId(String employerId);
-    Optional<Employer> findByRegistrationNumber(String registrationNumber);
-    boolean existsByRegistrationNumber(String registrationNumber);
-    List<Employer> findByActiveTrue();
-}
-```
-
-#### 2. Create EmployerRequest DTO
-```java
-package pension_management_system.pension.employer.dto;
-
-import jakarta.validation.constraints.*;
-import lombok.*;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class EmployerRequest {
-    @NotBlank(message = "Company name is required")
-    @Size(min = 2, max = 200)
-    private String companyName;
-
-    @NotBlank(message = "Registration number is required")
-    @Pattern(regexp = "^[A-Z0-9]{6,20}$")
-    private String registrationNumber;
-
-    @Email
-    private String email;
-
-    private String phoneNumber;
-    private String address;
-    private String city;
-    private String state;
-    private String country;
-    private String industry;
-}
-```
-
-#### 3. Create EmployerResponse DTO
-#### 4. Create EmployerMapper
-#### 5. Create EmployerService & Implementation
-#### 6. Create EmployerController
-
-**Follow the same pattern as Member and Contribution modules!**
-
----
-
-### Priority 2: Complete Benefit Module
-
-Similar structure to Employer module:
-- BenefitRepository
-- BenefitRequest, BenefitResponse
-- BenefitMapper
-- BenefitService & Implementation
-- BenefitController
-
-Key business logic for BenefitService:
-```java
-/**
- * Calculate benefit eligibility
- * Rules:
- * 1. Member must have contributed for minimum period (e.g., 12 months)
- * 2. Total contributions must exceed minimum amount
- * 3. Member must be ACTIVE or RETIRED
- */
-public BenefitResponse calculateBenefitEligibility(Long memberId) {
-    // Get member
-    // Get all contributions
-    // Calculate contribution period (months)
-    // Calculate total amount
-    // Check eligibility rules
-    // Create benefit record
-    // Return response
-}
-```
-
----
-
-### Priority 3: Background Jobs with Quartz (Day 3-4)
-
-#### 1. Add Configuration (Already provided in checklist)
-
-#### 2. Create Job: MonthlyContributionValidationJob
-Location: `src/main/java/.../job/MonthlyContributionValidationJob.java`
-
-**Purpose:** Check which members haven't made monthly contributions
-
-```java
-@Component
-@RequiredArgsConstructor
-@Slf4j
-public class MonthlyContributionValidationJob implements Job {
-
-    private final MemberRepository memberRepository;
-    private final ContributionRepository contributionRepository;
-
-    @Override
-    public void execute(JobExecutionContext context) {
-        log.info("Starting Monthly Contribution Validation Job");
-
-        // Get current month
-        YearMonth currentMonth = YearMonth.now();
-
-        // Get all active members
-        List<Member> activeMembers = memberRepository.findByActiveTrue();
-
-        // Check each member
-        for (Member member : activeMembers) {
-            // Check if they have monthly contribution for current month
-            Optional<Contribution> contribution = contributionRepository
-                    .findMonthlyContributionByMemberAndYearMonth(
-                            member,
-                            ContributionType.MONTHLY,
-                            currentMonth.getYear(),
-                            currentMonth.getMonthValue()
-                    );
-
-            if (contribution.isEmpty()) {
-                log.warn("Member {} missing monthly contribution for {}",
-                        member.getMemberId(), currentMonth);
-                // TODO: Send notification
-            }
-        }
-
-        log.info("Monthly Contribution Validation Job completed");
-    }
-}
-```
-
-#### 3. Create More Jobs:
-- BenefitEligibilityUpdateJob
-- MonthlyInterestCalculationJob
-- MemberStatementGenerationJob
-
----
-
-## 🧪 Writing Tests (Day 4-5)
-
-### Test Coverage Goals
-- **Target: 70% minimum**
-- Focus on service layer (business logic)
-- Test positive and negative scenarios
-- Test all business rules
-
-### Test Structure (Already provided)
-- Use the ContributionServiceTest example I created
-- Follow the same pattern for other services
+See [TESTING.md](TESTING.md) for detailed testing documentation.
 
 ### Run Tests
 ```bash
-# Run all tests
+# All tests
 ./mvnw test
 
-# Generate coverage report
-./mvnw test jacoco:report
+# Specific test class
+./mvnw test -Dtest=MemberServiceImplTest
 
-# View report
-open target/site/jacoco/index.html
+# With coverage
+./mvnw clean test jacoco:report
 ```
 
----
+### Test Coverage
+- **Target**: 70% minimum
+- **Current**: Unit tests for Member, Contribution, and Benefit services
+- Coverage reports: `target/site/jacoco/index.html`
 
-## 📚 Documentation (Day 5-6)
+## 📦 Deployment
 
-### 1. README.md
+### Environment Variables
 
-```markdown
-# Pension Management System
+Required environment variables for production:
 
-## Overview
-A comprehensive pension contribution management system built with Spring Boot.
-
-## Features
-- Member registration and management
-- Contribution processing (Monthly & Voluntary)
-- Employer management
-- Benefit calculation
-- Automated background jobs
-- Contribution statements
-
-## Tech Stack
-- Java 21
-- Spring Boot 3.5.6
-- MySQL Database
-- MapStruct for object mapping
-- Quartz for scheduling
-- Swagger/OpenAPI for documentation
-
-## Setup Instructions
-
-### Prerequisites
-- JDK 21
-- MySQL 8.0+
-- Maven 3.6+
-
-### Database Setup
-```sql
-CREATE DATABASE java_pension_management_system;
-```
-
-### Configuration
-Update `application.properties` with your database credentials.
-
-### Run Application
 ```bash
-./mvnw spring-boot:run
+# Database
+DB_HOST=production-db-host
+DB_PORT=3306
+DB_NAME=pension_prod
+DB_USERNAME=prod_user
+DB_PASSWORD=secure_password
+
+# JWT
+JWT_SECRET=your-256-bit-secret-key
+JWT_EXPIRATION=86400000
+
+# Email (Optional)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+
+# Profile
+SPRING_PROFILES_ACTIVE=prod
 ```
 
-### Access API Documentation
-http://localhost:8080/swagger-ui.html
+### Production Checklist
 
-## Architecture
-- Clean Architecture principles
-- Repository Pattern
-- Service Layer for business logic
-- DTO Pattern for API contracts
+- [ ] Update JWT secret to secure random key
+- [ ] Configure production database credentials
+- [ ] Enable SSL/TLS for database connections
+- [ ] Set up email service credentials
+- [ ] Configure Redis for caching (optional)
+- [ ] Set up monitoring and logging
+- [ ] Configure backup strategy
+- [ ] Review security configurations
+- [ ] Enable CORS for frontend domain
+- [ ] Set up rate limiting
 
-## API Endpoints
+## 🔄 Background Jobs
 
-### Members
-- POST /api/v1/members - Register new member
-- GET /api/v1/members/{id} - Get member
-- PUT /api/v1/members/{id} - Update member
-- DELETE /api/v1/members/{id} - Delete member
+The system runs scheduled jobs using Quartz Scheduler:
 
-### Contributions
-- POST /api/v1/contributions - Process contribution
-- GET /api/v1/contributions/member/{memberId} - Get contributions
-- GET /api/v1/contributions/member/{memberId}/statement - Generate statement
+| Job | Schedule | Description |
+|-----|----------|-------------|
+| Contribution Reminder | 1st of month, 9:00 AM | Reminds members without monthly contributions |
+| Retirement Eligibility | Daily, 2:00 AM | Notifies members approaching retirement |
+| Pending Benefit Reminder | Weekly, Monday 10:00 AM | Alerts admins of pending benefits (>7 days) |
+| Monthly Report | Last day of month, 11:59 PM | Generates system statistics report |
 
-## Business Rules
-1. Only ONE monthly contribution per calendar month
-2. Multiple voluntary contributions allowed
-3. Members must be 18-70 years old
-4. Minimum contribution period for benefits: 12 months
+## 🤝 Contributing
 
-## Testing
-```bash
-./mvnw test
-```
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Author
-[Your Name]
+### Code Style
+- Follow Java naming conventions
+- Use Lombok annotations appropriately
+- Write comprehensive JavaDoc for public methods
+- Maintain test coverage above 70%
 
-## License
-MIT
-```
+## 📄 License
 
-### 2. Export Postman Collection
-- Use Swagger UI to generate collection
-- Or manually create collection with all endpoints
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👥 Authors
+
+- **Timiochukwu** - Initial development
+
+## 🙏 Acknowledgments
+
+- Spring Boot team for the excellent framework
+- MapStruct for seamless DTO mapping
+- All contributors and users of this system
+
+## 📞 Support
+
+For support, email support@pensionsystem.com or create an issue in the GitHub repository.
 
 ---
 
-## ✅ Final Checklist Before Submission
-
-- [ ] All entities created
-- [ ] All repositories implemented
-- [ ] All services with business logic
-- [ ] All controllers with proper error handling
-- [ ] Background jobs configured and tested
-- [ ] Unit tests written (70%+ coverage)
-- [ ] Integration tests for critical paths
-- [ ] README.md complete
-- [ ] API documentation (Swagger)
-- [ ] Database migrations tested
-- [ ] Application runs without errors
-- [ ] Postman collection exported
-- [ ] Code pushed to GitHub (public repo)
-- [ ] All comments and documentation added
-
----
-
-## 🎯 Time Management
-
-### Day 1: Core Setup (8 hours)
-- Morning: Setup entities, repositories
-- Afternoon: Member & Contribution services
-- Evening: Controllers and testing
-
-### Day 2: Employer & Benefit (8 hours)
-- Morning: Employer module complete
-- Afternoon: Benefit module complete
-- Evening: Integration testing
-
-### Day 3: Background Jobs (6 hours)
-- Morning: Quartz configuration
-- Afternoon: Implement all 4 jobs
-- Evening: Test jobs
-
-### Day 4-5: Testing (12 hours)
-- Day 4: Write all unit tests
-- Day 5: Integration tests and bug fixes
-
-### Day 6: Documentation & Polish (6 hours)
-- Morning: Complete README
-- Afternoon: Final testing and cleanup
-- Evening: Submit
-
----
-
-## 🆘 Troubleshooting
-
-### Issue: MapStruct not generating implementations
-**Solution:**
-```bash
-./mvnw clean compile
-```
-
-### Issue: Database connection failed
-**Solution:** Check `application.properties` credentials
-
-### Issue: "Bean creation failed"
-**Solution:** Ensure all classes have proper annotations:
-- @Repository for repositories
-- @Service for services
-- @RestController for controllers
-
-### Issue: Tests failing
-**Solution:** Make sure you're using @ExtendWith(MockitoExtension.class)
-
+Built with ❤️ using Spring Boot

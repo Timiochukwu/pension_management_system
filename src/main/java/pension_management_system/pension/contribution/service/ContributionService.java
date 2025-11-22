@@ -14,12 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * ContributionService Interface
- *
- * Purpose: Defines contract for pension contribution operations
- * Handles contribution processing, tracking, and reporting
- */
 public interface ContributionService {
     ContributionResponse processContribution(ContributionRequest request);
     List<ContributionResponse> getMemberContributions(Long memberId);
@@ -28,53 +22,18 @@ public interface ContributionService {
     BigDecimal calculateTotalByType(Long memberId, ContributionType type);
     ContributionStatementResponse generateStatement(Long  memberId, LocalDate startDate, LocalDate endDate);
     List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
-
-    /**
-     * Get all contributions with pagination
-     *
-     * @param pageable Pagination settings
-     * @return Page containing all contributions
-     */
+    Page<ContributionResponse> quickSearch(String keyword, Pageable pageable);
     Page<ContributionResponse> getAllContributions(Pageable pageable);
-
-    /**
-     * Search and filter contributions with pagination
-     *
-     * Allows filtering by multiple criteria to find specific contributions
-     *
-     * @param referenceNumber Filter by reference number (partial match)
-     * @param memberId Filter by member ID
-     * @param contributionType Filter by type (MONTHLY or VOLUNTARY)
-     * @param status Filter by status (PENDING, COMPLETED, FAILED, etc.)
-     * @param paymentMethod Filter by payment method (BANK_TRANSFER, CASH, etc.)
-     * @param amountFrom Minimum contribution amount
-     * @param amountTo Maximum contribution amount
-     * @param contributionDateFrom Start date for contribution date range
-     * @param contributionDateTo End date for contribution date range
-     * @param pageable Pagination settings
-     * @return Page containing matching contributions
-     */
     Page<ContributionResponse> searchContributions(
-            String referenceNumber,
+            String keyword,
             Long memberId,
-            ContributionType contributionType,
+            ContributionType type,
             ContributionStatus status,
             PaymentMethod paymentMethod,
-            BigDecimal amountFrom,
-            BigDecimal amountTo,
-            LocalDate contributionDateFrom,
-            LocalDate contributionDateTo,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            LocalDate startDate,
+            LocalDate endDate,
             Pageable pageable
     );
-
-    /**
-     * Quick search contributions by keyword
-     *
-     * Searches across reference number, member name, and member email
-     *
-     * @param searchTerm Keyword to search for
-     * @param pageable Pagination settings
-     * @return Page containing matching contributions
-     */
-    Page<ContributionResponse> quickSearch(String searchTerm, Pageable pageable);
 }

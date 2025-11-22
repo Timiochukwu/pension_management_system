@@ -78,7 +78,7 @@ public class Employer {
     @Builder.Default
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employer", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Builder.Default
     private List<Member> members = new ArrayList<>();
 

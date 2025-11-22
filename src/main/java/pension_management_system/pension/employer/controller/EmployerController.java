@@ -40,8 +40,8 @@ public class EmployerController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDto);
     }
-    @PutMapping("/{id:\\d+}")
-    @Operation(summary = "Update an employer details")
+    @PutMapping("/{id}")
+    @Operation(summary = "Uodate an employer details")
     public ResponseEntity<ApiResponseDto<EmployerResponse>> updateEmployer(@Valid @RequestBody EmployerRequest request, @PathVariable Long id){
         log.info("PUT /api/v1/employers - Update employer: {}", request.getCompanyName());
 
@@ -99,8 +99,8 @@ public class EmployerController {
 //        log.info("GET /api/v1/employers");
 //        List<EmployerResponse> responses = employerService.get
 //    }
-@DeleteMapping("/{id:\\d+}")
-@Operation(summary = "Delete an employer")
+@DeleteMapping("/{id}")
+@Operation(summary = "delete an employer ")
 public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id){
     log.info("DELETE /api/v1/employers - delete employer: {}", id);
     employerService.softDeleteEmployer(id);
@@ -111,10 +111,10 @@ public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id
     return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
 
 }
-    @PutMapping("/activate/{id:\\d+}")
+    @PutMapping("/activate/{id}")
     @Operation(summary = "Activate an employer")
     public ResponseEntity<ApiResponseDto<Void>> activateEmployer(@PathVariable Long id){
-        log.info("DELETE /api/v1/employers - delete employer: {}", id);
+        log.info("PUT /api/v1/employers/activate/{} - activate employer", id);
         employerService.reactivateEmployer(id);
         ApiResponseDto<Void> apiResponseDto = ApiResponseDto.<Void>builder()
                 .success(true)
@@ -123,10 +123,10 @@ public ResponseEntity<ApiResponseDto<Void>> deleteEmployer(@PathVariable Long id
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
 
     }
-    @PutMapping("/deactivate/{id:\\d+}")
+    @PutMapping("/deactivate/{id}")
     @Operation(summary = "Deactivate an employer")
     public ResponseEntity<ApiResponseDto<Void>> deactivateEmployer(@PathVariable Long id){
-        log.info("DELETE /api/v1/employers - delete employer: {}", id);
+        log.info("PUT /api/v1/employers/deactivate/{} - deactivate employer", id);
         employerService.deactivateEmployer(id);
         ApiResponseDto<Void> apiResponseDto = ApiResponseDto.<Void>builder()
                 .success(true)

@@ -1,0 +1,35 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< finbank:banking >---------------------------
+[INFO] Building banking 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ banking ---
+[INFO] Deleting /Users/ebongakpabio/Downloads/pension/target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ banking ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 13 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ banking ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 139 source files with javac [debug release 22] to target/classes
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/contribution/entity/Contribution.java:[60,32] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/member/mapper/MemberMapper.java:[33,12] Unmapped target properties: "memberStatus, active".
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/member/mapper/MemberMapper.java:[42,20] Unmapped target properties: "totalContributions, totalContributionAmount, eligibleForBenefits".
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/member/mapper/MemberMapper.java:[56,10] Unmapped target properties: "memberStatus, active, employer".
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/employer/mapper/EmployerMapper.java:[21,14] Unmapped target property: "active".
+[WARNING] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/employer/mapper/EmployerMapper.java:[33,10] Unmapped target property: "active".
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/member/entity/Member.java: Some input files use or override a deprecated API.
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/member/entity/Member.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/payment/service/gateway/FlutterwaveService.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/payment/service/gateway/FlutterwaveService.java: Recompile with -Xlint:unchecked for details.
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/contribution/entity/Contribution.java: /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/contribution/entity/Contribution.java uses preview features of Java SE 22.
+[INFO] /Users/ebongakpabio/Downloads/pension/src/main/java/pension_management_system/pension/contribution/entity/Contribution.java: Recompile with -Xlint:preview for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  11.630 s
+[INFO] Finished at: 2025-11-17T22:59:47+01:00
+[INFO] ------------------------------------------------------------------------

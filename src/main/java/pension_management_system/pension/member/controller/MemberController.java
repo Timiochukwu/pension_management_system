@@ -15,12 +15,6 @@ import pension_management_system.pension.common.dto.ApiResponseDto;
 import pension_management_system.pension.member.dto.MemberRequest;
 import pension_management_system.pension.member.dto.MemberResponse;
 import pension_management_system.pension.member.service.MemberService;
-import pension_management_system.pension.benefit.dto.BenefitResponse;
-import pension_management_system.pension.benefit.service.BenefitService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -47,7 +41,6 @@ public class MemberController {
     // DEPENDENCY INJECTION
     // Spring automatically injects MemberService implementation
     private final MemberService memberService;
-    private final BenefitService benefitService;
     private final RestClient.Builder builder;
 
     /**
@@ -112,7 +105,7 @@ public class MemberController {
     * @param request Member data from request body
     * * @return ResponseEntity with created member and 201 status
     * */
-    @PutMapping("/{id:\\d+}")
+    @PutMapping("/{id}")
     @Operation(summary = "Update a member", description = "Update member in the pension system")
     public ResponseEntity<ApiResponseDto<MemberResponse>> updateMember(
             @PathVariable Long id, @Valid @RequestBody MemberRequest request){
@@ -157,27 +150,20 @@ public class MemberController {
     }
 
     @GetMapping
-    @Operation(summary = "Fetch all active members", description = "Fetch all active members in the pension system with pagination")
-    public ResponseEntity<ApiResponseDto<Page<MemberResponse>>> getAllActiveMembers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
-    ) {
-        log.info("GET /api/v1/members - page: {}, size: {}", page, size);
+    @Operation(summary = "Fetch all active members", description = "Fetch all active members in the pension system")
+    public  ResponseEntity<ApiResponseDto<List<MemberResponse>>> getAllActiveMembers() {
+        log.info("Fetch all active members");
+        log.info("GET /api/v1/members");
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        Page<MemberResponse> members = memberService.getAllActiveMembersWithPagination(pageable);
-        ApiResponseDto<Page<MemberResponse>> apiResponseDto = ApiResponseDto.<Page<MemberResponse>>builder()
+        List<MemberResponse> members = memberService.getAllActiveMembers();
+        ApiResponseDto<List<MemberResponse>> apiResponseDto = ApiResponseDto.<List<MemberResponse>>builder()
                 .success(true)
-                .message("All active members fetched successfully")
+                .message("All active members fetch successfully")
                 .data(members)
                 .build();
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponseDto);
     }
-    @DeleteMapping("/{id:\\d+}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> softDeleteMember(@PathVariable Long id){
         log.info("DELETE /api/v1/members/{}", id);
@@ -189,8 +175,8 @@ public class MemberController {
        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @PutMapping("activate/{id:\\d+}")
-    @Operation(summary = "Reactivate a member", description = "Reactivate a deactivated member in the pension system")
+    @PutMapping("activate/{id}")
+    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> reactivateMember(@PathVariable Long id){
         log.info("REACTIVATE /api/v1/members/{}", id);
         memberService.reactivateMember(id);
@@ -201,8 +187,8 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
     }
 
-    @PutMapping("deactivate/{id:\\d+}")
-    @Operation(summary = "Deactivate a member", description = "Deactivate an active member in the pension system")
+    @PutMapping("deactivate/{id}")
+    @Operation(summary = "Soft delete a member", description = "Soft delete a member in the pension system")
     public ResponseEntity<ApiResponseDto<Void>> deactivateMember(@PathVariable Long id){
         log.info("Deactivating /api/v1/members/{}", id);
         memberService.deactivateMember(id);
@@ -214,35 +200,5 @@ public class MemberController {
     }
 
 
-
-    @GetMapping("/claims")
-    @Operation(summary = "Get all benefit claims", description = "Get all benefit claims across all members")
-    public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getAllClaims() {
-        log.info("GET /api/v1/members/claims - Fetching all benefit claims");
-        List<BenefitResponse> claims = benefitService.getAllBenefits();
-
-        ApiResponseDto<List<BenefitResponse>> apiResponseDto = ApiResponseDto.<List<BenefitResponse>>builder()
-                .success(true)
-                .message("All claims retrieved successfully")
-                .data(claims)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
-    }
-
-    @GetMapping("/{id:\\d+}/claims")
-    @Operation(summary = "Get member's benefit claims", description = "Get all benefit claims for a specific member by database ID")
-    public ResponseEntity<ApiResponseDto<List<BenefitResponse>>> getMemberClaims(@PathVariable Long id) {
-        log.info("GET /api/v1/members/{}/claims - Fetching benefit claims", id);
-        List<BenefitResponse> claims = benefitService.getBenefitsByMemberId(id);
-
-        ApiResponseDto<List<BenefitResponse>> apiResponseDto = ApiResponseDto.<List<BenefitResponse>>builder()
-                .success(true)
-                .message("Member claims retrieved successfully")
-                .data(claims)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
-    }
 
 }

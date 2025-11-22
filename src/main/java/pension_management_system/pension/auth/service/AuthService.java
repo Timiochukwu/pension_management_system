@@ -1,79 +1,60 @@
 package pension_management_system.pension.auth.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pension_management_system.pension.auth.dto.AuthResponse;
 import pension_management_system.pension.auth.dto.LoginRequest;
-import pension_management_system.pension.auth.dto.LoginResponse;
 import pension_management_system.pension.auth.dto.RegisterRequest;
+import pension_management_system.pension.auth.entity.Role;
 import pension_management_system.pension.auth.entity.User;
 import pension_management_system.pension.auth.repository.UserRepository;
-import pension_management_system.pension.auth.util.JwtUtil;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public LoginResponse register(RegisterRequest request) {
-        log.info("Registering new user: {}", request.getUsername());
-
-        // Check if username exists
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new RuntimeException("Username already exists");
         }
 
-        // Check if email exists
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new RuntimeException("Email already exists");
         }
 
-        // Create new user
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .role(request.getRole())
+                .roles(Set.of(Role.ROLE_USER))
                 .enabled(true)
-                .accountNonExpired(true)
-                .accountNonLocked(true)
-                .credentialsNonExpired(true)
                 .build();
 
         userRepository.save(user);
-        log.info("User registered successfully: {}", user.getUsername());
 
-        // Generate token
-        String token = jwtUtil.generateToken(user);
+        String accessToken = jwtTokenProvider.generateToken(user.getUsername());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
 
-        return LoginResponse.builder()
-                .token(token)
-                .type("Bearer")
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .expiresIn(jwtUtil.getExpirationTime())
-                .build();
+        return AuthResponse.of(accessToken, refreshToken, user.getUsername(), user.getEmail());
     }
 
-    @Transactional
-    public LoginResponse login(LoginRequest request) {
-        log.info("User login attempt: {}", request.getUsername());
-
-        // Authenticate user
+    public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -81,24 +62,30 @@ public class AuthService {
                 )
         );
 
-        User user = (User) authentication.getPrincipal();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Update last login
-        user.updateLastLogin();
-        userRepository.save(user);
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseGet(() -> userRepository.findByEmail(request.getUsername())
+                        .orElseThrow(() -> new RuntimeException("User not found")));
 
-        // Generate token
-        String token = jwtUtil.generateToken(user);
+        String accessToken = jwtTokenProvider.generateToken(authentication);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
 
-        log.info("User logged in successfully: {}", user.getUsername());
+        return AuthResponse.of(accessToken, refreshToken, user.getUsername(), user.getEmail());
+    }
 
-        return LoginResponse.builder()
-                .token(token)
-                .type("Bearer")
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .expiresIn(jwtUtil.getExpirationTime())
-                .build();
+    public AuthResponse refreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken = jwtTokenProvider.generateToken(username);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(username);
+
+        return AuthResponse.of(newAccessToken, newRefreshToken, user.getUsername(), user.getEmail());
     }
 }

@@ -85,7 +85,7 @@ public enum MemberStatus {
      */
     public Boolean canClaimBenefits() {
         // Only ACTIVE and RETIRED members can claim benefits
-        return this == INACTIVE || this == SUSPENDED;
+        return this == ACTIVE || this == RETIRED;
     }
     /**
      * Check if status is final (cannot be changed)

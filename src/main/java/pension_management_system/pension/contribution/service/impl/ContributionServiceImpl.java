@@ -3,8 +3,8 @@ package pension_management_system.pension.contribution.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pension_management_system.pension.common.exception.DuplicateMonthlyContributionException;
@@ -16,18 +16,18 @@ import pension_management_system.pension.contribution.dto.ContributionStatementR
 import pension_management_system.pension.contribution.entity.Contribution;
 import pension_management_system.pension.contribution.entity.ContributionStatus;
 import pension_management_system.pension.contribution.entity.ContributionType;
-import pension_management_system.pension.contribution.entity.PaymentMethod;
 import pension_management_system.pension.contribution.mapper.ContributionMapper;
 import pension_management_system.pension.contribution.repository.ContributionRepository;
 import pension_management_system.pension.contribution.service.ContributionService;
-import pension_management_system.pension.contribution.specification.ContributionSpecification;
 import pension_management_system.pension.member.entity.Member;
 import pension_management_system.pension.member.repository.MemberRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,11 +61,11 @@ public class ContributionServiceImpl implements ContributionService {
         Contribution savedContribution = contributionRepository.save(contribution);
         savedContribution.markAsProcessed("SYSTEM");
 
-        contributionRepository.save(contribution);
+        contributionRepository.save(savedContribution);
 
         log.info("Contribution processed successfully for member id {}", request.getMemberId(), savedContribution.getReferenceNumber());
 
-        return contributionMapper.toResponse(contribution);
+        return contributionMapper.toResponse(savedContribution);
     }
     private void validateMonthlyContribution(Member member, LocalDate contributionDate) {
         int year = contributionDate.getYear();
@@ -85,260 +85,217 @@ public class ContributionServiceImpl implements ContributionService {
 
 
     @Override
-    @Transactional(readOnly = true)
     public List<ContributionResponse> getMemberContributions(Long memberId) {
-        log.info("Fetching all contributions for member id: {}", memberId);
+        log.info("Fetching all contributions for member id {}", memberId);
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        List<Contribution> contributions = contributionRepository.findByMember(member);
 
-        List<Contribution> contributions = contributionRepository.findByMemberId(member);
         return contributions.stream()
                 .map(contributionMapper::toResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ContributionResponse getContributionById(Long id) {
-        log.info("Fetching contribution by id: {}", id);
+        log.info("Fetching contribution for id {}", id);
         Contribution contribution = contributionRepository.findById(id)
+
                 .orElseThrow(() -> new InvalidContributionException("Contribution not found with id: " + id));
         return contributionMapper.toResponse(contribution);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public BigDecimal calculateTotalContributions(Long memberId) {
-        log.info("Calculating total contributions for member id: {}", memberId);
+        log.info("Calculating total contributions for member id {}", memberId);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
-
-        BigDecimal total = contributionRepository.getTotalContributionsByMember(member);
+        log.debug("Calculating total for member ID: {}", member.getId());
+        BigDecimal total = contributionRepository.getTotalContributionsById(memberId);
         return total != null ? total : BigDecimal.ZERO;
     }
 
     @Override
     @Transactional(readOnly = true)
     public BigDecimal calculateTotalByType(Long memberId, ContributionType type) {
-        log.info("Calculating total {} contributions for member id: {}", type, memberId);
+        log.info("Calculating total contributions for member id {}", memberId);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
-
         BigDecimal total = contributionRepository.getTotalByMemberAndType(member, type);
         return total != null ? total : BigDecimal.ZERO;
+
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ContributionStatementResponse generateStatement(Long memberId, LocalDate startDate, LocalDate endDate) {
-        log.info("Generating statement for member id: {} from {} to {}", memberId, startDate, endDate);
+        log.info("Generating statement for member id {}", memberId);
+        if (startDate.isAfter(endDate)) {
+            throw new InvalidContributionException("Start date must be before end date");
+        }
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        List<Contribution> contributions = contributionRepository.findByMemberAndContributionDateBetween(member, startDate, endDate);
+        BigDecimal totalMontly = BigDecimal.ZERO;
+        BigDecimal totalVoluntary = BigDecimal.ZERO;
 
-        List<Contribution> contributions = contributionRepository
-                .findByMemberAndContributionDateBetween(member, startDate, endDate);
+        for (Contribution contribution : contributions) {
+            if (contribution.getContributionType() == ContributionType.MONTHLY) {
+                totalMontly = totalMontly.add(contribution.getContributionAmount());
+            }else {
+                totalVoluntary = totalVoluntary.add(contribution.getContributionAmount());
+            }
+        }
+        BigDecimal totalContribution = totalMontly.add(totalVoluntary);
 
         List<ContributionResponse> contributionResponses = contributions.stream()
                 .map(contributionMapper::toResponse)
-                .toList();
-
-        BigDecimal totalMonthly = contributions.stream()
-                .filter(c -> c.getContributionType() == ContributionType.MONTHLY)
-                .map(Contribution::getContributionAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalVoluntary = contributions.stream()
-                .filter(c -> c.getContributionType() == ContributionType.VOLUNTARY)
-                .map(Contribution::getContributionAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal grandTotal = totalMonthly.add(totalVoluntary);
+                .collect(Collectors.toList());
 
         return ContributionStatementResponse.builder()
                 .memberId(member.getMemberId())
-                .memberName(member.getFirstName() + " " + member.getLastName())
+                .memberName(member.getFullName())
                 .startDate(startDate)
                 .endDate(endDate)
-                .generatedDate(LocalDate.now())
                 .contributions(contributionResponses)
-                .numberOfContributions(contributionResponses.size())
-                .totalMonthlyContribution(totalMonthly)
+                .totalMonthlyContribution(totalMontly)
                 .totalVoluntaryContribution(totalVoluntary)
-                .grandTotal(grandTotal)
+                .grandTotal(totalContribution)
+                .numberOfContributions(contributions.size())
+                .generatedDate(LocalDate.now())
                 .build();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<ContributionResponse> getContributionsByPeriod(Long memberId, LocalDate startDate, LocalDate endDate) {
-        log.info("Fetching contributions for member id: {} from {} to {}", memberId, startDate, endDate);
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + memberId));
+        return List.of();
+    }
 
-        List<Contribution> contributions = contributionRepository
-                .findByMemberAndContributionDateBetween(member, startDate, endDate);
+    @Override
+    public Page<ContributionResponse> quickSearch(String keyword, Pageable pageable) {
+        log.info("Quick search for keyword: {}", keyword);
+        // Simple implementation - search all contributions and filter by keyword
+        List<Contribution> allContributions = contributionRepository.findAll();
 
-        return contributions.stream()
+        List<ContributionResponse> filtered = allContributions.stream()
+                .filter(c -> matchesKeyword(c, keyword))
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .map(contributionMapper::toResponse)
-                .toList();
+                .collect(Collectors.toList());
+
+        long total = allContributions.stream()
+                .filter(c -> matchesKeyword(c, keyword))
+                .count();
+
+        return new PageImpl<>(filtered, pageable, total);
     }
 
-    @Transactional
-    public ContributionResponse updateContribution(Long id, ContributionRequest request) {
-        log.info("Updating contribution with id: {}", id);
-        Contribution contribution = contributionRepository.findById(id)
-                .orElseThrow(() -> new InvalidContributionException("Contribution not found with id: " + id));
-
-        // Validate member exists
-        Member member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + request.getMemberId()));
-
-        // Validate amount
-        if (request.getContributionAmount().compareTo(BigDecimal.valueOf(100)) < 0) {
-            throw new InvalidContributionException("Contribution amount must be at least 100");
+    private boolean matchesKeyword(Contribution contribution, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return true;
         }
-
-        // If changing to monthly contribution or changing the date of a monthly contribution,
-        // validate no duplicate monthly contribution
-        if (request.getContributionType() == ContributionType.MONTHLY) {
-            // Check if the month/year is changing
-            boolean isDateChanging = !contribution.getContributionDate().equals(request.getContributionDate());
-            boolean isTypeChanging = contribution.getContributionType() != ContributionType.MONTHLY;
-
-            if (isDateChanging || isTypeChanging) {
-                int year = request.getContributionDate().getYear();
-                int month = request.getContributionDate().getMonthValue();
-
-                Optional<Contribution> existingContribution = contributionRepository
-                        .findMonthlyContributionByMemberAndYearMonth(member, ContributionType.MONTHLY, year, month);
-
-                if (existingContribution.isPresent() && !existingContribution.get().getId().equals(id)) {
-                    String errorMessage = String.format(
-                            "Member %s already has a monthly contribution for %d-%02d. Reference: %s",
-                            member.getMemberId(), year, month, existingContribution.get().getReferenceNumber()
-                    );
-                    throw new DuplicateMonthlyContributionException(errorMessage);
-                }
-            }
-        }
-
-        // Update fields
-        contribution.setMember(member);
-        contribution.setContributionType(request.getContributionType());
-        contribution.setContributionAmount(request.getContributionAmount());
-        contribution.setContributionDate(request.getContributionDate().atStartOfDay());
-        contribution.setPaymentMethod(request.getPaymentMethod());
-        contribution.setDescription(request.getDescription());
-
-        Contribution updatedContribution = contributionRepository.save(contribution);
-        log.info("Contribution updated successfully with id: {}", id);
-
-        return contributionMapper.toResponse(updatedContribution);
+        String lowerKeyword = keyword.toLowerCase();
+        return (contribution.getReferenceNumber() != null &&
+                contribution.getReferenceNumber().toLowerCase().contains(lowerKeyword)) ||
+               (contribution.getMember() != null && contribution.getMember().getMemberId() != null &&
+                contribution.getMember().getMemberId().toLowerCase().contains(lowerKeyword)) ||
+               (contribution.getMember() != null && contribution.getMember().getFullName() != null &&
+                contribution.getMember().getFullName().toLowerCase().contains(lowerKeyword));
     }
-
-    @Transactional
-    public void deleteContribution(Long id) {
-        log.info("Deleting contribution with id: {}", id);
-        Contribution contribution = contributionRepository.findById(id)
-                .orElseThrow(() -> new InvalidContributionException("Contribution not found with id: " + id));
-
-        contributionRepository.delete(contribution);
-        log.info("Contribution deleted successfully with id: {}", id);
-    }
-
-    /**
-     * ADVANCED SEARCH - Search contributions with multiple filter criteria
-     *
-     * How this works:
-     * 1. Builds dynamic query using Specification pattern
-     * 2. Combines all filter criteria into SQL WHERE clauses
-     * 3. Executes query with pagination
-     * 4. Maps entities to DTOs
-     *
-     * Use cases:
-     * - Find all PENDING contributions for a specific member
-     * - Find all contributions within amount range (e.g., 1000-5000)
-     * - Find all BANK_TRANSFER contributions in last 3 months
-     * - Combine multiple filters for complex searches
-     *
-     * Example SQL generated:
-     * WHERE member_id = 123
-     *   AND status = 'COMPLETED'
-     *   AND contribution_date BETWEEN '2025-01-01' AND '2025-12-31'
-     *   AND contribution_amount >= 1000
-     */
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ContributionResponse> getAllContributions(Pageable pageable) {
-        log.info("Fetching all contributions with pagination - page: {}, size: {}",
-                pageable.getPageNumber(), pageable.getPageSize());
-
-        Page<Contribution> contributions = contributionRepository.findAll(pageable);
-        return contributions.map(contributionMapper::toResponse);
+        log.info("Getting all contributions with pagination");
+        Page<Contribution> contributionPage = contributionRepository.findAll(pageable);
+        return contributionPage.map(contributionMapper::toResponse);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ContributionResponse> searchContributions(
-            String referenceNumber,
+            String keyword,
             Long memberId,
-            ContributionType contributionType,
+            ContributionType type,
             ContributionStatus status,
             PaymentMethod paymentMethod,
-            BigDecimal amountFrom,
-            BigDecimal amountTo,
-            LocalDate contributionDateFrom,
-            LocalDate contributionDateTo,
-            Pageable pageable
-    ) {
-        // Log for debugging/monitoring
-        log.info("Searching contributions - memberId: {}, status: {}", memberId, status);
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable) {
 
-        // STEP 1: Build dynamic query specification
-        // Only non-null parameters are added to the query
-        Specification<Contribution> spec = ContributionSpecification.filterContributions(
-                referenceNumber, memberId, contributionType, status, paymentMethod,
-                amountFrom, amountTo, contributionDateFrom, contributionDateTo
-        );
+        log.info("Searching contributions with filters");
 
-        // STEP 2: Execute query with pagination
-        Page<Contribution> contributions = contributionRepository.findAll(spec, pageable);
+        // Get all contributions and apply filters
+        List<Contribution> allContributions = contributionRepository.findAll();
 
-        // STEP 3: Convert entities to DTOs
-        // This hides internal database structure from API consumers
-        return contributions.map(contributionMapper::toResponse);
+        List<ContributionResponse> filtered = allContributions.stream()
+                .filter(c -> matchesSearchCriteria(c, keyword, memberId, type, status, paymentMethod, minAmount, maxAmount, startDate, endDate))
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .map(contributionMapper::toResponse)
+                .collect(Collectors.toList());
+
+        long total = allContributions.stream()
+                .filter(c -> matchesSearchCriteria(c, keyword, memberId, type, status, paymentMethod, minAmount, maxAmount, startDate, endDate))
+                .count();
+
+        return new PageImpl<>(filtered, pageable, total);
     }
 
-    /**
-     * QUICK SEARCH - Simple keyword search across multiple fields
-     *
-     * Searches in:
-     * - Reference number (e.g., "CON20250115...")
-     * - Member first name
-     * - Member last name
-     * - Member email
-     *
-     * Perfect for: Search boxes where user types one term and you search everywhere
-     *
-     * Example: searchTerm="john"
-     * Finds contributions where:
-     * - Reference contains "john" OR
-     * - Member first name contains "john" OR
-     * - Member last name contains "john" OR
-     * - Member email contains "john"
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ContributionResponse> quickSearch(String searchTerm, Pageable pageable) {
-        log.info("Quick search for contributions with term: {}", searchTerm);
+    private boolean matchesSearchCriteria(
+            Contribution c,
+            String keyword,
+            Long memberId,
+            ContributionType type,
+            ContributionStatus status,
+            PaymentMethod paymentMethod,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            LocalDate startDate,
+            LocalDate endDate) {
 
-        // Build OR-based search specification
-        Specification<Contribution> spec = ContributionSpecification.searchContributions(searchTerm);
+        // Keyword filter
+        if (keyword != null && !keyword.trim().isEmpty() && !matchesKeyword(c, keyword)) {
+            return false;
+        }
 
-        // Execute and return results
-        Page<Contribution> contributions = contributionRepository.findAll(spec, pageable);
+        // Member ID filter
+        if (memberId != null && (c.getMember() == null || !c.getMember().getId().equals(memberId))) {
+            return false;
+        }
 
-        return contributions.map(contributionMapper::toResponse);
+        // Type filter
+        if (type != null && c.getContributionType() != type) {
+            return false;
+        }
+
+        // Status filter
+        if (status != null && c.getStatus() != status) {
+            return false;
+        }
+
+        // Payment method filter
+        if (paymentMethod != null && c.getPaymentMethod() != paymentMethod) {
+            return false;
+        }
+
+        // Amount range filter
+        if (minAmount != null && c.getContributionAmount().compareTo(minAmount) < 0) {
+            return false;
+        }
+        if (maxAmount != null && c.getContributionAmount().compareTo(maxAmount) > 0) {
+            return false;
+        }
+
+        // Date range filter
+        if (startDate != null && c.getContributionDate().isBefore(startDate.atStartOfDay())) {
+            return false;
+        }
+        if (endDate != null && c.getContributionDate().isAfter(endDate.atTime(23, 59, 59))) {
+            return false;
+        }
+
+        return true;
     }
 }
