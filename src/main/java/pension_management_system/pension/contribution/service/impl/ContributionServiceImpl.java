@@ -16,6 +16,7 @@ import pension_management_system.pension.contribution.dto.ContributionStatementR
 import pension_management_system.pension.contribution.entity.Contribution;
 import pension_management_system.pension.contribution.entity.ContributionStatus;
 import pension_management_system.pension.contribution.entity.ContributionType;
+import pension_management_system.pension.contribution.entity.PaymentMethod;
 import pension_management_system.pension.contribution.mapper.ContributionMapper;
 import pension_management_system.pension.contribution.repository.ContributionRepository;
 import pension_management_system.pension.contribution.service.ContributionService;
