@@ -203,4 +203,99 @@ public class ContributionServiceImpl implements ContributionService {
                (contribution.getMember() != null && contribution.getMember().getFullName() != null &&
                 contribution.getMember().getFullName().toLowerCase().contains(lowerKeyword));
     }
+
+    @Override
+    public Page<ContributionResponse> getAllContributions(Pageable pageable) {
+        log.info("Getting all contributions with pagination");
+        Page<Contribution> contributionPage = contributionRepository.findAll(pageable);
+        return contributionPage.map(contributionMapper::toResponse);
+    }
+
+    @Override
+    public Page<ContributionResponse> searchContributions(
+            String keyword,
+            Long memberId,
+            ContributionType type,
+            ContributionStatus status,
+            PaymentMethod paymentMethod,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable) {
+
+        log.info("Searching contributions with filters");
+
+        // Get all contributions and apply filters
+        List<Contribution> allContributions = contributionRepository.findAll();
+
+        List<ContributionResponse> filtered = allContributions.stream()
+                .filter(c -> matchesSearchCriteria(c, keyword, memberId, type, status, paymentMethod, minAmount, maxAmount, startDate, endDate))
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .map(contributionMapper::toResponse)
+                .collect(Collectors.toList());
+
+        long total = allContributions.stream()
+                .filter(c -> matchesSearchCriteria(c, keyword, memberId, type, status, paymentMethod, minAmount, maxAmount, startDate, endDate))
+                .count();
+
+        return new PageImpl<>(filtered, pageable, total);
+    }
+
+    private boolean matchesSearchCriteria(
+            Contribution c,
+            String keyword,
+            Long memberId,
+            ContributionType type,
+            ContributionStatus status,
+            PaymentMethod paymentMethod,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            LocalDate startDate,
+            LocalDate endDate) {
+
+        // Keyword filter
+        if (keyword != null && !keyword.trim().isEmpty() && !matchesKeyword(c, keyword)) {
+            return false;
+        }
+
+        // Member ID filter
+        if (memberId != null && (c.getMember() == null || !c.getMember().getId().equals(memberId))) {
+            return false;
+        }
+
+        // Type filter
+        if (type != null && c.getContributionType() != type) {
+            return false;
+        }
+
+        // Status filter
+        if (status != null && c.getStatus() != status) {
+            return false;
+        }
+
+        // Payment method filter
+        if (paymentMethod != null && c.getPaymentMethod() != paymentMethod) {
+            return false;
+        }
+
+        // Amount range filter
+        if (minAmount != null && c.getContributionAmount().compareTo(minAmount) < 0) {
+            return false;
+        }
+        if (maxAmount != null && c.getContributionAmount().compareTo(maxAmount) > 0) {
+            return false;
+        }
+
+        // Date range filter
+        if (startDate != null && c.getContributionDate().isBefore(startDate.atStartOfDay())) {
+            return false;
+        }
+        if (endDate != null && c.getContributionDate().isAfter(endDate.atTime(23, 59, 59))) {
+            return false;
+        }
+
+        return true;
+    }
 }
