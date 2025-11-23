@@ -1,5 +1,6 @@
 package pension_management_system.pension.cache;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,11 @@ import java.util.concurrent.TimeUnit;
  * - Login attempt limiting (5 attempts/15 minutes)
  * - Payment initiation limiting (10/hour)
  * - OTP request limiting (3/hour)
+ *
+ * Note: Only enabled when Redis is configured
  */
 @Component
+@ConditionalOnBean(RedisTemplate.class)
 public class DistributedRateLimiter {
 
     private final RedisTemplate<String, Object> redisTemplate;
