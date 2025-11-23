@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import pension_management_system.pension.analytics.dto.SystemStatisticsDto;
 import pension_management_system.pension.analytics.service.AnalyticsService;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(name = "emailService")
 public class MonthlyReportGenerationJob implements Job {
 
     private final AnalyticsService analyticsService;

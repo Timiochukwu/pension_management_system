@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import pension_management_system.pension.contribution.entity.ContributionType;
 import pension_management_system.pension.contribution.repository.ContributionRepository;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(name = "emailService")
 public class ContributionReminderJob implements Job {
 
     private final MemberRepository memberRepository;

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import pension_management_system.pension.benefit.entity.Benefit;
 import pension_management_system.pension.benefit.entity.BenefitStatus;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(name = "emailService")
 public class PendingBenefitReminderJob implements Job {
 
     private final BenefitRepository benefitRepository;
