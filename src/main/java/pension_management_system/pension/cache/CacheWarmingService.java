@@ -1,6 +1,7 @@
 package pension_management_system.pension.cache;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
@@ -24,6 +25,7 @@ import pension_management_system.pension.analytics.service.AnalyticsService;
  */
 @Service
 @Slf4j
+@ConditionalOnBean(CacheManager.class)
 public class CacheWarmingService {
 
     private final AnalyticsService analyticsService;

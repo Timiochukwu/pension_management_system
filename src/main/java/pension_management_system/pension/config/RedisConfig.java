@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -55,9 +56,11 @@ import java.time.Duration;
  * Annotations:
  * @Configuration - Spring configuration class
  * @EnableCaching - Enable Spring's caching support
+ * @ConditionalOnProperty - Only load this config when Redis is enabled
  */
 @Configuration
 @EnableCaching
+@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis", matchIfMissing = false)
 public class RedisConfig {
 
     /**
