@@ -180,12 +180,6 @@
 			<version>5.2.5</version>
 		</dependency>
 
-		<!-- Spring Session with Redis for distributed sessions -->
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-data-redis</artifactId>
-		</dependency>
-
 		<!-- Micrometer Prometheus for advanced monitoring -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
