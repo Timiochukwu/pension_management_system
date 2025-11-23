@@ -3,6 +3,7 @@ package pension_management_system.pension.monitoring.health;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Component;
  * Health status:
  * - UP: Redis is accessible
  * - DOWN: Redis is not accessible
+ *
+ * Note: Only enabled when Redis is configured
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(RedisTemplate.class)
 public class RedisHealthIndicator implements HealthIndicator {
 
     private final RedisTemplate<String, Object> redisTemplate;
