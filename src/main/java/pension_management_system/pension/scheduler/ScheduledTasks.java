@@ -2,6 +2,7 @@ package pension_management_system.pension.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pension_management_system.pension.analytics.service.AnalyticsService;
@@ -53,12 +54,17 @@ import java.util.Optional;
  *
  * Enable with @EnableScheduling in main class
  *
+ * NOTE: This component is conditional on EmailService being available.
+ * It will only load if EmailService bean exists (when email is configured).
+ *
  * @Component - Spring component
  * @Slf4j - Logging
+ * @ConditionalOnBean - Only loads when EmailService is available
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(name = "emailService")
 public class ScheduledTasks {
 
     private final MemberService memberService;
